@@ -22,8 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import StatusBadge from '@/components/common/StatusBadge.vue';
+import { computed } from "vue";
+import StatusBadge from "@/components/common/StatusBadge.vue";
 
 const props = defineProps<{
   title: string;
@@ -42,7 +42,7 @@ const salary = computed(() => {
   const { salaryMin, salaryMax, salaryCurrency } = props;
   if (salaryMin === null && salaryMax === null) return null;
   const fmt = (v: number) => v.toLocaleString();
-  const cur = salaryCurrency || '';
+  const cur = salaryCurrency || "";
   if (salaryMin !== null && salaryMax !== null) return `${fmt(salaryMin)}–${fmt(salaryMax)} ${cur}`;
   if (salaryMin !== null) return `from ${fmt(salaryMin)} ${cur}`;
   return `up to ${fmt(salaryMax!)} ${cur}`;

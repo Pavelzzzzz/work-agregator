@@ -51,7 +51,7 @@ export interface SearchResponse {
 }
 
 export interface VacancyUpdateEvent {
-  eventType: 'NEW' | 'UPDATED';
+  eventType: "NEW" | "UPDATED";
   vacancy: Vacancy;
   timestamp: string;
 }

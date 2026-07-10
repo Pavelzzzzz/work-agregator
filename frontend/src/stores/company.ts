@@ -1,9 +1,9 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { companyApi } from '@/api/company';
-import type { Company } from '@/types/company';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { companyApi } from "@/api/company";
+import type { Company } from "@/types/company";
 
-export const useCompanyStore = defineStore('company', () => {
+export const useCompanyStore = defineStore("company", () => {
   const companies = ref<Company[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
@@ -14,7 +14,7 @@ export const useCompanyStore = defineStore('company', () => {
     try {
       companies.value = await companyApi.list();
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to load companies';
+      error.value = e instanceof Error ? e.message : "Failed to load companies";
     } finally {
       loading.value = false;
     }

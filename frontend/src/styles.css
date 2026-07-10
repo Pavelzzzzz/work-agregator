@@ -2,5 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #app { height: 100%; margin: 0; }
-.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}

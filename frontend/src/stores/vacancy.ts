@@ -1,9 +1,9 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { vacancyApi } from '@/api/vacancy';
-import type { Vacancy, SearchFilters, SearchResponse, VacancyUpdateEvent } from '@/types/vacancy';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { vacancyApi } from "@/api/vacancy";
+import type { Vacancy, SearchFilters, SearchResponse, VacancyUpdateEvent } from "@/types/vacancy";
 
-export const useVacancyStore = defineStore('vacancy', () => {
+export const useVacancyStore = defineStore("vacancy", () => {
   const results = ref<Vacancy[]>([]);
   const total = ref(0);
   const page = ref(0);
@@ -23,7 +23,7 @@ export const useVacancyStore = defineStore('vacancy', () => {
       page.value = resp.page;
       pageSize.value = resp.pageSize;
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Search failed';
+      error.value = e instanceof Error ? e.message : "Search failed";
     } finally {
       loading.value = false;
     }
@@ -38,8 +38,22 @@ export const useVacancyStore = defineStore('vacancy', () => {
   }
 
   function unsubscribeUpdates() {
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
   }
 
-  return { results, total, page, pageSize, loading, error, events, search, subscribe, unsubscribeUpdates };
+  return {
+    results,
+    total,
+    page,
+    pageSize,
+    loading,
+    error,
+    events,
+    search,
+    subscribe,
+    unsubscribeUpdates,
+  };
 });

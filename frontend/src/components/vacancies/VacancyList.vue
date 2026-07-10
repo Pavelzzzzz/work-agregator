@@ -25,8 +25,10 @@
         <input v-model="filters.remoteOnly" type="checkbox" class="rounded">
         Remote only
       </label>
-      <button class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
-        @click="doSearch">
+      <button
+        class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+        @click="doSearch"
+      >
         Search
       </button>
     </div>
@@ -58,24 +60,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { useVacancyStore } from '@/stores/vacancy';
-import VacancyCard from '@/components/vacancies/VacancyCard.vue';
-import Spinner from '@/components/common/Spinner.vue';
+import { ref, reactive } from "vue";
+import { useVacancyStore } from "@/stores/vacancy";
+import VacancyCard from "@/components/vacancies/VacancyCard.vue";
+import Spinner from "@/components/common/Spinner.vue";
 
 const store = useVacancyStore();
-const query = ref('');
+const query = ref("");
 const filters = reactive({
-  employmentType: '',
-  source: '',
+  employmentType: "",
+  source: "",
   remoteOnly: false,
 });
 
 function doSearch() {
-  store.search({ query: query.value || undefined, ...filters, remoteOnly: filters.remoteOnly || undefined });
+  store.search({
+    query: query.value || undefined,
+    ...filters,
+    remoteOnly: filters.remoteOnly || undefined,
+  });
 }
 
 function formatDate(d: string) {
-  try { return new Date(d).toLocaleDateString(); } catch { return d; }
+  try {
+    return new Date(d).toLocaleDateString();
+  } catch {
+    return d;
+  }
 }
 </script>
