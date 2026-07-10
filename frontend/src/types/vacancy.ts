@@ -1,44 +1,38 @@
-export interface VacancyTranslation {
+export interface Vacancy {
   id: string;
-  vacancyId: string;
-  lang: string;
+  sourceId: string;
+  sourceName: string;
   title: string;
   companyName: string;
+  companyWebsite: string | null;
   description: string | null;
   requirements: string | null;
   responsibilities: string | null;
-}
-
-export interface Vacancy {
-  id: string;
-  sourceUrl: string;
-  sourceName: string;
-  employmentType: string | null;
-  skills: string[];
   salaryMin: number | null;
   salaryMax: number | null;
   salaryCurrency: string | null;
   location: string | null;
-  remote: boolean;
-  tags: string[];
-  companyId: string | null;
+  employmentType: string | null;
+  experienceRequired: string | null;
+  skills: string[];
   postedAt: string;
+  url: string;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  translations: VacancyTranslation[];
 }
 
 export interface SearchFilters {
   query?: string;
+  language?: string;
   source?: string;
   employmentType?: string;
   minSalary?: number;
   maxSalary?: number;
   skills?: string[];
-  companyId?: string;
+  companyName?: string;
   location?: string;
   remoteOnly?: boolean;
-  language?: string;
   page?: number;
   pageSize?: number;
 }

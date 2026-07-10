@@ -1,12 +1,30 @@
 <template>
   <div>
-    <div class="flex items-center gap-3 mb-6">
+    <div class="flex flex-wrap items-center gap-3 mb-6">
       <input
         v-model="query"
         type="text"
         placeholder="Search vacancies..."
-        class="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="flex-1 min-w-[200px] border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         @keyup.enter="doSearch"
+      >
+      <input
+        v-model="filters.skillsText"
+        type="text"
+        placeholder="Skills (comma separated)"
+        class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+      <input
+        v-model="filters.minSalary"
+        type="number"
+        placeholder="Salary min"
+        class="w-28 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+      <input
+        v-model="filters.maxSalary"
+        type="number"
+        placeholder="Salary max"
+        class="w-28 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
       <select v-model="filters.employmentType" class="border rounded-lg px-3 py-2 text-sm">
         <option value="">All types</option>
@@ -15,13 +33,7 @@
         <option value="CONTRACT">Contract</option>
         <option value="INTERNSHIP">Internship</option>
       </select>
-      <select v-model="filters.source" class="border rounded-lg px-3 py-2 text-sm">
-        <option value="">All sources</option>
-        <option value="hh.ru">hh.ru</option>
-        <option value="linkedin">LinkedIn</option>
-        <option value="djinni">Djinni</option>
-      </select>
-      <label class="flex items-center gap-2 text-sm cursor-pointer">
+      <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
         <input v-model="filters.remoteOnly" type="checkbox" class="rounded">
         Remote only
       </label>
@@ -44,10 +56,10 @@
       <VacancyCard
         v-for="v in store.results"
         :key="v.id"
-        :title="v.translations?.[0]?.title || 'Untitled'"
-        :company-name="v.translations?.[0]?.companyName || ''"
+        :title="v.title || 'Untitled'"
+        :company-name="v.companyName || ''"
         :employment-type="v.employmentType"
-        :remote="v.remote"
+        :remote="!v.location"
         :skills="v.skills"
         :location="v.location"
         :salary-min="v.salaryMin"
@@ -67,17 +79,28 @@ import Spinner from "@/components/common/Spinner.vue";
 
 const store = useVacancyStore();
 const query = ref("");
+
 const filters = reactive({
   employmentType: "",
-  source: "",
   remoteOnly: false,
+  minSalary: undefined as number | undefined,
+  maxSalary: undefined as number | undefined,
+  skillsText: "",
 });
 
 function doSearch() {
+  const skills = filters.skillsText
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   store.search({
     query: query.value || undefined,
-    ...filters,
+    employmentType: filters.employmentType || undefined,
     remoteOnly: filters.remoteOnly || undefined,
+    minSalary: filters.minSalary || undefined,
+    maxSalary: filters.maxSalary || undefined,
+    skills: skills.length ? skills : undefined,
   });
 }
 

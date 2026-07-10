@@ -19,11 +19,9 @@
       <div class="bg-white rounded-lg border">
         <div class="px-5 py-3 border-b flex justify-between items-center">
           <h2 class="font-semibold text-gray-900">Companies</h2>
-          <router-link to="/companies" class="text-sm text-blue-600 hover:underline"
-            >
-View all
-</router-link
-          >
+          <router-link to="/companies" class="text-sm text-blue-600 hover:underline">
+            View all
+          </router-link>
         </div>
         <div v-if="companyStore.loading" class="p-5"><Spinner /></div>
         <div v-else-if="companyStore.error" class="p-5 text-sm text-red-600">
@@ -39,7 +37,7 @@ View all
               <p class="font-medium text-gray-900">{{ c.name }}</p>
               <p class="text-xs text-gray-500">{{ c.description }}</p>
             </div>
-            <StatusBadge :variant="c.active ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
+            <StatusBadge :variant="c.isActive ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
           </div>
           <div v-if="!companyStore.companies.length" class="p-5 text-sm text-gray-400 text-center">
             No companies yet
@@ -58,9 +56,7 @@ View all
             <StatusBadge :variant="evt.eventType === 'NEW' ? 'green' : 'yellow'" class="mr-2">
               {{ evt.eventType }}
             </StatusBadge>
-            <span class="text-gray-700">{{
-              evt.vacancy?.translations?.[0]?.title || "Unknown title"
-            }}</span>
+            <span class="text-gray-700">{{ evt.vacancy?.title || "Unknown title" }}</span>
             <span class="text-gray-400 ml-2 text-xs">{{ formatTime(evt.timestamp) }}</span>
           </div>
         </div>

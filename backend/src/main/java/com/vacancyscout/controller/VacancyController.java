@@ -4,6 +4,7 @@ import com.vacancyscout.dto.SearchFilters;
 import com.vacancyscout.dto.SearchResponse;
 import com.vacancyscout.model.Vacancy;
 import com.vacancyscout.service.VacancySearchService;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,8 @@ public class VacancyController {
       @RequestParam(required = false) String language,
       @RequestParam(required = false) String source,
       @RequestParam(required = false) String employmentType,
+      @RequestParam(required = false) BigDecimal minSalary,
+      @RequestParam(required = false) BigDecimal maxSalary,
       @RequestParam(required = false) List<String> skills,
       @RequestParam(required = false) String companyName,
       @RequestParam(required = false) String location,
@@ -36,8 +39,8 @@ public class VacancyController {
             language,
             source,
             employmentType,
-            null,
-            null,
+            minSalary,
+            maxSalary,
             skills,
             companyName,
             location,
