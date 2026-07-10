@@ -21,7 +21,7 @@ public class VacancySearchServiceTest {
 
   private final VacancyRepository vacancyRepository = Mockito.mock(VacancyRepository.class);
 
-  private final com.vacancyscout.service.VacancySearchService service =
+  private final VacancySearchService service =
       new VacancySearchService(vacancyRepository);
 
   @Test

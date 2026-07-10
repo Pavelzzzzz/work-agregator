@@ -11,8 +11,8 @@
         <exclude name="JUnitAssertionsShouldIncludeMessage"/>
         <exclude name="JUnitTestContainsTooManyAsserts"/>
         <exclude name="JUnitTestsShouldIncludeAssert"/>
+        <exclude name="JUnit5TestShouldBePackagePrivate"/>
         <exclude name="AvoidReassigningParameters"/>
-        <exclude name="UseExplicitTypes"/>
         <exclude name="AccessorMethodGeneration"/>
         <exclude name="ArrayIsStoredDirectly"/>
         <exclude name="MethodReturnsInternalArray"/>
@@ -30,7 +30,6 @@
     </rule>
 
     <rule ref="category/java/performance.xml">
-        <exclude name="SimplifyStartsWith"/>
         <exclude name="RedundantFieldInitializer"/>
         <exclude name="UseStringBufferForStringAppends"/>
     </rule>
@@ -48,13 +47,11 @@
         <exclude name="LocalVariableCouldBeFinal"/>
         <exclude name="MethodArgumentCouldBeFinal"/>
         <exclude name="CommentDefaultAccessModifier"/>
-        <exclude name="DefaultPackage"/>
         <exclude name="CallSuperInConstructor"/>
         <exclude name="ClassNamingConventions"/>
         <exclude name="FieldNamingConventions"/>
         <exclude name="GenericsNaming"/>
         <exclude name="MethodNamingConventions"/>
-        <exclude name="TooManyMethods"/>
         <exclude name="ConfusingTernary"/>
         <exclude name="UseUnderscoresInNumericLiterals"/>
         <exclude name="LinguisticNaming"/>
@@ -65,16 +62,9 @@
         <exclude name="UnnecessaryAnnotationValueElement"/>
         <exclude name="UnnecessaryImport"/>
         <exclude name="BooleanGetMethodName"/>
-        <exclude name="EmptyMethodInAbstractClass"/>
-        <exclude name="AbstractNaming"/>
-        <exclude name="AvoidFinalLocalVariable"/>
-        <exclude name="ForLoopVariableCount"/>
         <exclude name="UseExplicitTypes"/>
         <exclude name="ShortMethodName"/>
     </rule>
-    <rule ref="category/java/codestyle.xml/UnnecessaryBoxing"/>
-    <rule ref="category/java/codestyle.xml/UnnecessaryModifier"/>
-    <rule ref="category/java/codestyle.xml/UnnecessaryReturn"/>
 
     <rule ref="category/java/design.xml">
         <exclude name="LawOfDemeter"/>
@@ -84,8 +74,6 @@
         <exclude name="AvoidThrowingRawExceptionTypes"/>
         <exclude name="SignatureDeclareThrowsException"/>
         <exclude name="UseUtilityClass"/>
-        <exclude name="ImmutableField"/>
-        <exclude name="AvoidLongParameterList"/>
         <exclude name="ExcessiveParameterList"/>
         <exclude name="ExcessivePublicCount"/>
         <exclude name="TooManyFields"/>
@@ -95,7 +83,6 @@
         <exclude name="CognitiveComplexity"/>
         <exclude name="NPathComplexity"/>
         <exclude name="AvoidThrowingNewInstanceOfSameException"/>
-        <exclude name="FinalClass"/>
         <exclude name="UseObjectForClearerAPI"/>
     </rule>
 </ruleset>
