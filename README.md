@@ -41,18 +41,18 @@ it-vacancy-aggregator/
 │   │   │   ├── VacancyController.java
 │   │   │   ├── CompanyController.java
 │   │   │   └── VacancyUpdatesController.java  # SSE
+│   │   ├── ingestion/           # Rabota.by RSS + JSON‑LD парсинг
+│   │   │   ├── RabotaByRssSource.java
+│   │   │   ├── RabotaByVacancyDetailFetcher.java
+│   │   │   └── VacancyIngestionService.java
 │   │   ├── service/             # Business logic
 │   │   │   ├── VacancySearchService.java
-│   │   │   ├── scanner/         # Sources: hh.ru, rabota.by, LinkedIn, etc.
-│   │   │   ├── resume/
-│   │   │   ├── ai/              # LM Studio cover letter generation
-│   │   │   ├── application/
 │   │   │   └── company/
 │   │   ├── model/               # Company, Vacancy, Resume, Application
 │   │   ├── repository/          # R2DBC repositories
 │   │   ├── dto/                 # SearchFilters, SearchResponse, VacancyUpdateEvent
 │   │   ├── stream/              # VacancyUpdateStream (SSE)
-│   │   └── loader/              # CompanySeedLoader
+│   │   └── loader/              # CompanySeedLoader (1 demo company)
 │   └── src/main/resources/db/changelog/
 │       ├── db.changelog-master.xml
 │       ├── v1.0.0__init_schema.xml
@@ -135,9 +135,9 @@ curl -N -H "Accept: text/event-stream" \
   "title": "Java Developer",
   "companyName": "EPAM Systems",
   "postedAt": "2026-07-10T12:00:00",
-  "sourceName": "HH_RU",
+  "sourceName": "RABOTA_BY",
   "eventType": "NEW",
-  "source": "hh.ru"
+  "source": "rabota.by"
 }
 ```
 
@@ -177,6 +177,16 @@ cd backend
 ./gradlew liquibaseValidate       # Проверка миграций
 ```
 
+## Ingestion (Rabota.by)
+
+Ingestion запускается по расписанию (каждый час) через `VacancyIngestionService`:
+
+1. **RabotaByRssSource** — получает RSS-ленту `/search/vacancy/rss`, парсит XML, собирает список вакансий
+2. **RabotaByVacancyDetailFetcher** — для каждой вакансии загружает страницу, извлекает JSON‑LD
+3. **VacancyIngestionService** — дедуплицирует по `(sourceName, sourceId)`, автоматически создаёт компании (по названию), публикует SSE-события
+
+RSS не требует OAuth/токенов, работает без регистрации приложения.
+
 ## Планируемые функции
 
 - [ ] Полнотекстовый поиск вакансий (RU/EN) через tsvector
@@ -184,5 +194,4 @@ cd backend
 - [ ] AI-генерация сопроводительных писем (LM Studio Qwen)
 - [ ] Загрузка и парсинг резюме (PDF)
 - [ ] Отправка откликов (email, копирование, PDF)
-- [ ] Dashboard с аналитикой
 - [ ] Аутентификация (JWT/OAuth2)

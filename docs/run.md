@@ -115,12 +115,9 @@ cd backend
 
 ## 4. Seed-данные
 
-При старте приложения `CompanySeedLoader` заполняет БД начальными компаниями,
-если таблица `companies` пуста. Текущие seed-компании:
-
-- EPAM Systems
-- IBA Group
-- Wargaming
+При старте приложения `CompanySeedLoader` создаёт одну демо-компанию,
+если таблица `companies` пуста. Остальные компании создаются автоматически
+при ингесте вакансий (по названию компании из вакансии).
 
 Дополнительные компании можно добавить через API:
 
@@ -136,7 +133,31 @@ curl -X POST http://localhost:8080/api/companies \
   }'
 ```
 
-## 5. SSE поток обновлений
+## 5. Ingestion вакансий (Rabota.by)
+
+Ingestion запускается автоматически каждый час через `VacancyIngestionService`.
+
+### Ручной запуск
+
+При старте backend ingestion запускается сразу (если `app.ingestion.enabled=true`, значение по умолчанию).
+
+### Проверка результата
+
+```bash
+# После запуска ingestion (ждём до 1 минуты)
+curl http://localhost:8080/api/vacancies/search?pageSize=5
+curl http://localhost:8080/api/companies
+```
+
+### Как это работает
+
+1. `RabotaByRssSource` → `GET /search/vacancy/rss` (XML)
+2. `RabotaByVacancyDetailFetcher` → страница вакансии → JSON‑LD
+3. `VacancyIngestionService` → дедупликация + создание компании + SSE
+
+RSS-лента не требует токена доступа.
+
+## 6. SSE поток обновлений
 
 ### Эндпоинт
 
@@ -154,25 +175,25 @@ curl -N -H "Accept: text/event-stream" \
 ### Формат события
 
 ```
-data:{"id":"uuid","vacancyId":"uuid","title":"Java Developer","companyName":"EPAM","postedAt":"2026-07-10T12:00:00","sourceName":"HH_RU","eventType":"NEW","source":"hh.ru"}
+data:{"id":"uuid","vacancyId":"uuid","title":"Java Developer","companyName":"EPAM","postedAt":"2026-07-10T12:00:00","sourceName":"RABOTA_BY","eventType":"NEW","source":"rabota.by"}
 ```
 
 ### Параметры
 
 - `since` — ISO дата/время, с которого получать обновления (опционально)
 
-## 6. API эндпоинты
+## 7. API эндпоинты
 
 ### Вакансии
 
 ```bash
 # Поиск с фильтрами
-GET /api/vacancies/search?q=Java&language=ru&source=HH_RU&employmentType=FULL_TIME&page=0&pageSize=20
+GET /api/vacancies/search?q=Java&language=ru&source=RABOTA_BY&employmentType=FULL_TIME&page=0&pageSize=20
 
 # Параметры:
 # q           - поисковый запрос
 # language    - ru (русский) | en (английский)
-# source      - HH_RU | RABOTA_BY | LINKEDIN | DJINNI
+# source      - RABOTA_BY
 # employmentType - FULL_TIME | PART_TIME | CONTRACT | REMOTE
 # skills      - Java,Spring (через запятую)
 # companyName - название компании
@@ -192,7 +213,7 @@ PUT    /api/companies/{id}     # Обновить компанию
 DELETE /api/companies/{id}     # Удалить компанию
 ```
 
-## 7. Тестирование
+## 8. Тестирование
 
 ### Backend
 
@@ -202,8 +223,8 @@ cd backend
 # Юнит-тесты
 ./gradlew test
 
-# Интеграционные тесты
-./gradlew integrationTest
+# Проверка стиля
+./gradlew spotlessCheck checkstyleMain pmdMain
 
 # Все тесты с coverage
 ./gradlew test jacocoTestReport
@@ -216,11 +237,13 @@ open build/reports/jacoco/test/html/index.html
 
 ```bash
 cd frontend
-npm run test          # Unit tests (Vitest)
-npm run test:e2e      # E2E tests (Cypress/Playwright) — если настроено
+npm run lint              # ESLint
+npm run format:fix        # Prettier
 ```
 
-## 8. CI/CD Pipeline
+## 9. CI/CD Pipeline
+
+GitHub Actions workflow — сборка, тесты, линтеры (Spotless, Checkstyle, PMD, ESLint), сборка Docker-образов.
 
 GitHub Actions workflow (`.github/workflows/ci.yml`):
 
@@ -236,7 +259,7 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 | Liquibase validate | `./gradlew liquibaseValidate` |
 | Jacoco report | `./gradlew jacocoTestReport` |
 
-## 9. Docker сборка
+## 10. Docker сборка
 
 ### Backend Dockerfile
 
@@ -257,7 +280,7 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
 | `R2DBC_URL` | Reactive JDBC URL | `r2dbc:postgresql://db:5432/vacancy_scout` |
 | `LM_STUDIO_BASE_URL` | URL LM Studio API | `http://localhost:1234/v1` |
 
-## 10. Kubernetes развёртывание
+## 11. Kubernetes развёртывание
 
 ### Dev окружение
 
@@ -287,7 +310,7 @@ kubectl get pods -n vacancy-prod
 | `frontend-service.yaml` | Service frontend (prod: LoadBalancer) |
 | `ingress.yaml` | Ingress с nginx controller |
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 ### База данных не подключается
 

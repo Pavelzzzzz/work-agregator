@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.0] - 2026-07-10
+
+### Ingestion (Rabota.by)
+
+- `RabotaByRssSource` — парсинг RSS-ленты `/search/vacancy/rss` (без OAuth).
+- `RabotaByVacancyDetailFetcher` — извлечение JSON‑LD со страницы вакансии.
+- `VacancyIngestionService` — шедулер (каждый час), дедупликация по `(sourceName, sourceId)`, SSE-публикация, авто-создание компаний по названию.
+- `CompanySeedLoader` — сокращён до одной демо-компании; seed-компании больше не хардкодятся.
+
+### Backend
+
+- Исправления Checkstyle: `MethodName` разрешает подчёркивания.
+- Исправления PMD: удалены несовместимые правила для PMD 7.
+- `CompanySeedLoader` — фикс R2DBC `INSERT` (Persistable).
+
+### Frontend
+
+- Исправлены ESLint-ошибки парсинга (optional chaining, optional catch, TypeScript в Vue SFC).
+- ESLint flat config: корректная настройка `vue-eslint-parser` + `@typescript-eslint/parser`.
+- Убраны `any` в catch-блоках Pinia-хранилищ.
+- Форматирование авто-исправлено (attributes order, hyphens, self-closing).
+- Линт проходит с 0 errors и 0 warnings.
+
+### CI
+
+- ESLint 9 flat config (удалён флаг `--ext`).
+- `--max-warnings 0` для строгой валидации.
+
 ## [0.2.0] - 2026-07-10
 
 ### Frontend

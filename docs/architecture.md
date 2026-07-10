@@ -20,8 +20,8 @@
 │  │  CoverLetterGenerator │ ResumeParser   │ ExportService       │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  VacancyScannerService (hh.ru, rabota.by, LinkedIn, DJINNI)  │   │
-│  │  CompanyWebsiteSource | RateLimiter | Deduplication          │   │
+│  │  VacancyIngestionService (Rabota.by RSS + JSON‑LD)          │   │
+│  │  RabotaByRssSource | RabotaByVacancyDetailFetcher           │   │
 │  └─────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────┘
                               │ R2DBC / Redis
@@ -49,22 +49,25 @@
 
 ## Поток данных
 
-### Сканирование вакансий
+### Ingestion вакансий (Rabota.by)
 
 ```
-Scheduler (каждый час)
+Scheduler (@Scheduled, каждый час)
     ↓
-VacancyScannerService
-    ├── hh.ru (API/парсинг)
-    ├── rabota.by (API)
-    ├── LinkedIn (парсинг)
-    ├── DJINNI (парсинг)
-    └── Company websites (парсинг)
+VacancyIngestionService
     ↓
-RateLimiter → Deduplication → VacancyRepository
+RabotaByRssSource — GET /search/vacancy/rss → XML парсинг
+    ↓  (для каждой вакансии)
+RabotaByVacancyDetailFetcher — GET страница вакансии → JSON‑LD извлечение
+    ↓
+Deduplication по (sourceName, sourceId) → VacancyRepository
+    ↓  (если новая компания)
+CompanyRepository.create(name)
     ↓
 VacancyUpdateStream.publish(event) → SSE clients
 ```
+
+RSS-лента rabota.by не требует OAuth-токена, что упрощает интеграцию.
 
 ### Поиск вакансий
 
