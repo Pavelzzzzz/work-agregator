@@ -37,17 +37,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Lint backend (Spotless)
-        working-directory: ./backend
-        run: ./gradlew spotlessCheck
+        run: ./gradlew :backend:spotlessCheck
       - name: Lint backend (Checkstyle)
-        working-directory: ./backend
-        run: ./gradlew checkstyleMain
+        run: ./gradlew :backend:checkstyleMain
       - name: Lint backend (PMD)
-        working-directory: ./backend
-        run: ./gradlew pmdMain
+        run: ./gradlew :backend:pmdMain
       - name: Build backend
-        working-directory: ./backend
-        run: ./gradlew -q build
+        run: ./gradlew :backend:build -x spotlessCheck -x checkstyleMain -x pmdMain
       - name: Build frontend (npm)
         working-directory: ./frontend
         run: |
@@ -61,15 +57,9 @@ jobs:
       - name: Lint frontend (Prettier)
         working-directory: ./frontend
         run: npm run format
-      - name: Run unit tests (backend)
-        working-directory: ./backend
-        run: ./gradlew test
-      - name: Run integration tests (backend)
-        working-directory: ./backend
-        run: ./gradlew integrationTest
+      - name: Run tests (backend)
+        run: ./gradlew :backend:test
       - name: Liquibase migrations (validate changelogs)
-        working-directory: ./backend
-        run: ./gradlew liquibaseValidate
+        run: ./gradlew :backend:liquibaseValidate
       - name: Generate Jacoco report
-        working-directory: ./backend
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew :backend:jacocoTestReport

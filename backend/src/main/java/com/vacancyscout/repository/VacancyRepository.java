@@ -1,22 +1,27 @@
 package com.vacancyscout.repository;
 
 import com.vacancyscout.model.Vacancy;
+import java.util.UUID;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.math.BigDecimal;
-import java.util.UUID;
 
 @Repository
 public interface VacancyRepository extends R2dbcRepository<Vacancy, UUID> {
-    Flux<Vacancy> findBySourceName(String sourceName);
-    Flux<Vacancy> findAllByIsActiveTrueOrderByPostedAtDesc();
-    Mono<Vacancy> findBySourceNameAndSourceId(String sourceName, String sourceId);
-    boolean existsBySourceNameAndSourceId(String sourceName, String sourceId);
+  int DEFAULT_SEARCH_LIMIT = 1000;
 
-    @Query("""
+  Flux<Vacancy> findBySourceName(String sourceName);
+
+  Flux<Vacancy> findAllByIsActiveTrueOrderByPostedAtDesc();
+
+  Mono<Vacancy> findBySourceNameAndSourceId(String sourceName, String sourceId);
+
+  Mono<Boolean> existsBySourceNameAndSourceId(String sourceName, String sourceId);
+
+  @Query(
+      """
         SELECT v.* FROM vacancies v
         WHERE v.is_active = true
         AND EXISTS (
@@ -26,9 +31,10 @@ public interface VacancyRepository extends R2dbcRepository<Vacancy, UUID> {
         )
         ORDER BY v.posted_at DESC LIMIT :limit OFFSET :offset
     """)
-    Flux<Vacancy> searchInRussian(String query, int limit, int offset);
+  Flux<Vacancy> searchInRussian(String query, int limit, int offset);
 
-    @Query("""
+  @Query(
+      """
         SELECT v.* FROM vacancies v
         WHERE v.is_active = true
         AND EXISTS (
@@ -38,5 +44,5 @@ public interface VacancyRepository extends R2dbcRepository<Vacancy, UUID> {
         )
         ORDER BY v.posted_at DESC LIMIT :limit OFFSET :offset
     """)
-    Flux<Vacancy> searchInEnglish(String query, int limit, int offset);
+  Flux<Vacancy> searchInEnglish(String query, int limit, int offset);
 }

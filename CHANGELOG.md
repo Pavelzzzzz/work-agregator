@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.0] - 2026-07-10
+
+### Frontend
+- Full UI layout: NavBar, Dashboard, Vacancy search, Companies list.
+- Pinia stores (`company`, `vacancy`) with API clients (Axios).
+- TypeScript types (`Company`, `Vacancy`, `SearchFilters`, `SearchResponse`, `VacancyUpdateEvent`).
+- Vite proxy (`/api` → backend) for local dev.
+- Proper Tailwind CSS setup (postcss + tailwind config).
+- SSE subscription for live vacancy updates on Dashboard.
+
+### Backend
+- `Company` model: `record` → `class` with `Persistable<UUID>` for correct R2DBC INSERT handling.
+- `CompanySeedLoader`: fixed `saveAll().subscribe()` → `saveAll().then().block()`, removed hardcoded UUID.
+- `liquibase.url` configured directly in `application.yml` (bypasses JDBC `DataSource` bean in reactive mode).
+- GIN indexes via raw SQL (`CREATE INDEX ... USING GIN`) instead of unsupported `indexType`.
+- `v1.2.0__sample_companies.xml` removed (dead code, duplicated `CompanySeedLoader`).
+- `@JsonIgnore` on `isNew()` — no internal persistence state in API responses.
+
+### CI
+- Fixed `ci.yml`: uses root `gradlew` with `:backend:` prefix, removed non-existent `integrationTest` step.
+- Fixed ESLint scripts (removed `--ext` flag, unsupported in ESLint 9).
+- Fixed Checkstyle config XML (duplicate `name` attributes).
+- PMD ruleset tuned for PMD 7.x compatibility.
+
+### Docker
+- Fixed frontend port mapping: `5173:5173` → `5173:80` (nginx listens on port 80).
+- Added Vite proxy config for development builds.
+
 ## [0.1.0] - 2026-07-10
 
 ### Added

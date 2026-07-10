@@ -15,5 +15,4 @@ public record SearchFilters(
     String location,
     Boolean remoteOnly,
     Integer page,
-    Integer pageSize
-) {}
+    Integer pageSize) {}

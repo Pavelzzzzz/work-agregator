@@ -17,11 +17,7 @@
     </changeSet>
 
     <changeSet id="v1.3.0-add-search-indexes" author="vacancyscout">
-        <createIndex tableName="vacancies" indexName="idx_vacancies_search_ru" indexType="GIN">
-            <column name="search_vector_ru"/>
-        </createIndex>
-        <createIndex tableName="vacancies" indexName="idx_vacancies_search_en" indexType="GIN">
-            <column name="search_vector_en"/>
-        </createIndex>
+        <sql>CREATE INDEX IF NOT EXISTS idx_vacancies_search_ru ON vacancies USING GIN (search_vector_ru)</sql>
+        <sql>CREATE INDEX IF NOT EXISTS idx_vacancies_search_en ON vacancies USING GIN (search_vector_en)</sql>
     </changeSet>
 </databaseChangeLog>

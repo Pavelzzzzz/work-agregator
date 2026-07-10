@@ -34,6 +34,7 @@ dependencies {
     // Reactive DB
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
+    runtimeOnly("org.postgresql:postgresql")
     // Liquibase
     implementation("org.liquibase:liquibase-core")
     // Redis

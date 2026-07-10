@@ -24,9 +24,7 @@
         <addPrimaryKey tableName="vacancy_translations"
                        columnNames="vacancy_id,lang"
                        constraintName="pk_vacancy_translations"/>
-        <createIndex tableName="vacancy_translations" indexName="idx_vt_search_vector" indexType="GIN">
-            <column name="search_vector"/>
-        </createIndex>
+        <sql>CREATE INDEX IF NOT EXISTS idx_vt_search_vector ON vacancy_translations USING GIN (search_vector)</sql>
     </changeSet>
 
     <changeSet id="v1.5.0-drop-vacancy-translate-columns" author="vacancyscout">

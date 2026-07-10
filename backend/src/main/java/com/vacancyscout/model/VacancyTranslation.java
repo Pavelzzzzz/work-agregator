@@ -1,7 +1,7 @@
 package com.vacancyscout.model;
 
-import org.springframework.data.relational.core.mapping.Table;
 import java.util.UUID;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Table("vacancy_translations")
 public record VacancyTranslation(
@@ -12,5 +12,4 @@ public record VacancyTranslation(
     String description,
     String requirements,
     String responsibilities,
-    String searchVector
-) {}
+    String searchVector) {}

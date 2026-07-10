@@ -2,6 +2,5 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal styling for MVP */
 html, body, #app { height: 100%; margin: 0; }
-.container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }

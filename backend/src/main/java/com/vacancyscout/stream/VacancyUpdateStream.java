@@ -7,13 +7,14 @@ import reactor.core.publisher.Sinks;
 
 @Component
 public class VacancyUpdateStream {
-    private final Sinks.Many<VacancyUpdateEvent> sink = Sinks.many().multicast().onBackpressureBuffer();
+  private final Sinks.Many<VacancyUpdateEvent> sink =
+      Sinks.many().multicast().onBackpressureBuffer();
 
-    public void publish(VacancyUpdateEvent event) {
-        sink.tryEmitNext(event);
-    }
+  public void publish(VacancyUpdateEvent event) {
+    sink.tryEmitNext(event);
+  }
 
-    public Flux<VacancyUpdateEvent> stream() {
-        return sink.asFlux();
-    }
+  public Flux<VacancyUpdateEvent> stream() {
+    return sink.asFlux();
+  }
 }

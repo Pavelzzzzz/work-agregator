@@ -10,6 +10,5 @@ public record VacancyUpdateEvent(
     String companyName,
     LocalDateTime postedAt,
     String sourceName,
-    String eventType, // NEW | UPDATED
-    String source
-) {}
+    EventType eventType,
+    String sourceUrl) {}
