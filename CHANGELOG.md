@@ -2,6 +2,14 @@
 
 ## [0.3.0] - 2026-07-10
 
+### Full-Text Search & Advanced Filters
+
+- **Полнотекстовый поиск** — через `vacancy_translations.search_vector` (tsvector) с поддержкой русского и английского языков.
+- **Расширенные фильтры** — source, employmentType, companyName, location, remoteOnly, minSalary, maxSalary, skills — все фильтры применяются на стороне БД.
+- **Динамический SQL** — `VacancySearchService` строит запрос через `DatabaseClient` с учётом только активных фильтров.
+- **Пагинация на уровне БД** — `LIMIT/OFFSET` + отдельный `COUNT(*)` для точного total.
+- **Frontend** — поля ввода для skills (comma-separated), salary min/max, employment type select, remote checkbox.
+
 ### Ingestion (Rabota.by)
 
 - `RabotaByRssSource` — парсинг RSS-ленты `/search/vacancy/rss` (без OAuth).
