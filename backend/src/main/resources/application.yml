@@ -24,5 +24,12 @@ spring:
   main:
     web-application-type: reactive
 
+rabota:
+  rss:
+    base-url: https://rabota.by
+    area: 16
+    queries: java,python,javascript,frontend,backend,devops,qa,data scientist,golang,kotlin,swift,flutter,react,vue,angular,php,scala,rust,typescript,product manager,business analyst,system administrator,network engineer,security,designer,machine learning
+    fetch-interval-ms: 3600000
+
 server:
   port: 8080
