@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.vacancyscout.service.VacancySearchServiceTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-07-10T10:25:43" hostname="ThinkBook14G6" time="0.115">
-  <properties/>
-  <testcase name="search_withoutQuery_shouldReturnEmpty()" classname="com.vacancyscout.service.VacancySearchServiceTest" time="0.11"/>
-  <testcase name="search_withQuery_shouldReturnResults()" classname="com.vacancyscout.service.VacancySearchServiceTest" time="0.004"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

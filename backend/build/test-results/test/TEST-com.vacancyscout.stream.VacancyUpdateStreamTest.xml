@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.vacancyscout.stream.VacancyUpdateStreamTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-07-10T10:25:43" hostname="ThinkBook14G6" time="0.034">
-  <properties/>
-  <testcase name="should_emit_events_in_order()" classname="com.vacancyscout.stream.VacancyUpdateStreamTest" time="0.034"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
