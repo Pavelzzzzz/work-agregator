@@ -1,27 +1,36 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginVue from "eslint-plugin-vue";
-import globals from "globals";
+import vueParser from "vue-eslint-parser";
 
 export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...pluginVue.configs["flat/recommended"],
   {
+    files: ["**/*.vue"],
     languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
+      parser: vueParser,
+      parserOptions: {
+        parser: tseslint.parser,
+        ecmaVersion: "latest",
+        sourceType: "module",
       },
     },
   },
   {
     rules: {
       "vue/multi-word-component-names": "off",
+      "vue/singleline-html-element-content-newline": "off",
+      "vue/max-attributes-per-line": "off",
+      "vue/first-attribute-linebreak": "off",
+      "vue/html-indent": "off",
+      "vue/html-closing-bracket-newline": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
         { argsIgnorePattern: "^_" },
       ],
+      "@typescript-eslint/no-explicit-any": "warn",
       "no-console": "warn",
     },
   },

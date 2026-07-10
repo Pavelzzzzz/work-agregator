@@ -22,8 +22,8 @@ export const useVacancyStore = defineStore('vacancy', () => {
       total.value = resp.total;
       page.value = resp.page;
       pageSize.value = resp.pageSize;
-    } catch (e: any) {
-      error.value = e.message || 'Search failed';
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Search failed';
     } finally {
       loading.value = false;
     }

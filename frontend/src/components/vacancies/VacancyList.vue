@@ -7,7 +7,7 @@
         placeholder="Search vacancies..."
         class="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         @keyup.enter="doSearch"
-      />
+      >
       <select v-model="filters.employmentType" class="border rounded-lg px-3 py-2 text-sm">
         <option value="">All types</option>
         <option value="FULL_TIME">Full-time</option>
@@ -22,11 +22,11 @@
         <option value="djinni">Djinni</option>
       </select>
       <label class="flex items-center gap-2 text-sm cursor-pointer">
-        <input type="checkbox" v-model="filters.remoteOnly" class="rounded" />
+        <input v-model="filters.remoteOnly" type="checkbox" class="rounded">
         Remote only
       </label>
-      <button @click="doSearch"
-        class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+      <button class="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+        @click="doSearch">
         Search
       </button>
     </div>
@@ -43,15 +43,15 @@
         v-for="v in store.results"
         :key="v.id"
         :title="v.translations?.[0]?.title || 'Untitled'"
-        :companyName="v.translations?.[0]?.companyName || ''"
-        :employmentType="v.employmentType"
+        :company-name="v.translations?.[0]?.companyName || ''"
+        :employment-type="v.employmentType"
         :remote="v.remote"
         :skills="v.skills"
         :location="v.location"
-        :salaryMin="v.salaryMin"
-        :salaryMax="v.salaryMax"
-        :salaryCurrency="v.salaryCurrency"
-        :postedAt="formatDate(v.postedAt)"
+        :salary-min="v.salaryMin"
+        :salary-max="v.salaryMax"
+        :salary-currency="v.salaryCurrency"
+        :posted-at="formatDate(v.postedAt)"
       />
     </div>
   </div>

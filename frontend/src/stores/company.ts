@@ -13,8 +13,8 @@ export const useCompanyStore = defineStore('company', () => {
     error.value = null;
     try {
       companies.value = await companyApi.list();
-    } catch (e: any) {
-      error.value = e.message || 'Failed to load companies';
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to load companies';
     } finally {
       loading.value = false;
     }

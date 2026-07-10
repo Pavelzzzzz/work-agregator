@@ -40,7 +40,7 @@
       <div class="bg-white rounded-lg border">
         <div class="px-5 py-3 border-b flex justify-between items-center">
           <h2 class="font-semibold text-gray-900">Live Updates</h2>
-          <button @click="clearEvents" class="text-sm text-gray-500 hover:text-gray-700">Clear</button>
+          <button class="text-sm text-gray-500 hover:text-gray-700" @click="clearEvents">Clear</button>
         </div>
         <div v-if="vacancyStore.events.length" class="divide-y max-h-80 overflow-y-auto">
           <div v-for="(evt, i) in vacancyStore.events" :key="i" class="px-5 py-2.5 text-sm">
