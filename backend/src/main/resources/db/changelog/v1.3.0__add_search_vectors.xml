@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="v1.3.0-add-search-columns" author="vacancyscout">
+        <addColumn tableName="vacancies">
+            <column name="search_vector_ru" type="tsvector"/>
+            <column name="search_vector_en" type="tsvector"/>
+            <column name="description_en" type="text"/>
+            <column name="requirements_en" type="text"/>
+            <column name="responsibilities_en" type="text"/>
+            <column name="title_translated" type="varchar(500)"/>
+            <column name="company_name_translated" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v1.3.0-add-search-indexes" author="vacancyscout">
+        <createIndex tableName="vacancies" indexName="idx_vacancies_search_ru" indexType="GIN">
+            <column name="search_vector_ru"/>
+        </createIndex>
+        <createIndex tableName="vacancies" indexName="idx_vacancies_search_en" indexType="GIN">
+            <column name="search_vector_en"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

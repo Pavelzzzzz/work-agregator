@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vacancy-backend
+  namespace: vacancy-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vacancy-backend
+  template:
+    metadata:
+      labels:
+        app: vacancy-backend
+    spec:
+      containers:
+        - name: backend
+          image: vacancy-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-password
+            - name: R2DBC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: r2dbc-url
+            - name: LM_STUDIO_BASE_URL
+              value: http://lm-studio:1234/v1
+      imagePullPolicy: IfNotPresent

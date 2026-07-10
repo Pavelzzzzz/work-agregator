@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vacancy-frontend
+  namespace: vacancy-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vacancy-frontend
+  template:
+    metadata:
+      labels:
+        app: vacancy-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: vacancy-frontend:latest
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+          imagePullPolicy: IfNotPresent

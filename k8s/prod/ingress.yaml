@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vacancy-ingress
+  namespace: vacancy-prod
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  rules:
+  - host: vacancy.prod.local
+    http:
+      paths:
+      - path: /?(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: vacancy-backend
+            port:
+              number: 8080

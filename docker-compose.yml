@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  backend:
+    build: ./backend
+    container_name: vacancy-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - DB_PASSWORD=changeme
+  frontend:
+    build: ./frontend
+    container_name: vacancy-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: vacancy_scout
+      POSTGRES_PASSWORD: vacancy_scout
+      POSTGRES_DB: vacancy_scout
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  lm-studio:
+    image: ghcr.io/your-org/lm-studio:latest
+    container_name: lm-studio
+    # LM Studio should be available locally on port 1234
+    ports:
+      - "1234:1234"
+volumes:
+  postgres_data:
+    driver: local

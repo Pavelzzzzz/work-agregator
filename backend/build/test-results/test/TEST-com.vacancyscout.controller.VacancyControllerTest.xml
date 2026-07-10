@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.vacancyscout.controller.VacancyControllerTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-07-10T10:25:43" hostname="ThinkBook14G6" time="0.136">
+  <properties/>
+  <testcase name="search_shouldReturnEmptyWhenNoResults()" classname="com.vacancyscout.controller.VacancyControllerTest" time="0.136"/>
+  <system-out><![CDATA[2026-07-10T13:25:43.039+03:00  INFO 68290 --- [vacancy-scout] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.vacancyscout.controller.VacancyControllerTest]: VacancyControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-10T13:25:43.050+03:00  INFO 68290 --- [vacancy-scout] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.vacancyscout.VacancyScoutApplication for test class com.vacancyscout.controller.VacancyControllerTest
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.0)
+
+2026-07-10T13:25:43.093+03:00  WARN 68290 --- [vacancy-scout] [    Test worker] ory$DuplicateJsonObjectContextCustomizer : 
+
+Found multiple occurrences of org.json.JSONObject on the class path:
+
+	jar:file:/home/pavel/.gradle/caches/modules-2/files-2.1/com.vaadin.external.google/android-json/0.0.20131108.vaadin1/fa26d351fe62a6a17f5cda1287c1c6110dec413f/android-json-0.0.20131108.vaadin1.jar!/org/json/JSONObject.class
+	jar:file:/home/pavel/.gradle/caches/modules-2/files-2.1/org.json/json/20240303/ebb88e8fb5122b7506d5cf1d69f1ccdb790d22a/json-20240303.jar!/org/json/JSONObject.class
+
+You may wish to exclude one of them to ensure predictable runtime behavior
+
+2026-07-10T13:25:43.094+03:00  INFO 68290 --- [vacancy-scout] [    Test worker] c.v.controller.VacancyControllerTest     : Starting VacancyControllerTest using Java 21.0.11 with PID 68290 (started by pavel in /home/pavel/Documents/projects/work_agregator/backend)
+2026-07-10T13:25:43.094+03:00  INFO 68290 --- [vacancy-scout] [    Test worker] c.v.controller.VacancyControllerTest     : No active profile set, falling back to 1 default profile: "default"
+2026-07-10T13:25:43.398+03:00  INFO 68290 --- [vacancy-scout] [    Test worker] c.v.controller.VacancyControllerTest     : Started VacancyControllerTest in 0.343 seconds (process running for 5.588)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

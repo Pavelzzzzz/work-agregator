@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: vacancy_scout
+          POSTGRES_PASSWORD: vacancy_scout
+          POSTGRES_DB: vacancy_scout
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/**.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Lint backend (Spotless)
+        working-directory: ./backend
+        run: ./gradlew spotlessCheck
+      - name: Lint backend (Checkstyle)
+        working-directory: ./backend
+        run: ./gradlew checkstyleMain
+      - name: Lint backend (PMD)
+        working-directory: ./backend
+        run: ./gradlew pmdMain
+      - name: Build backend
+        working-directory: ./backend
+        run: ./gradlew -q build
+      - name: Build frontend (npm)
+        working-directory: ./frontend
+        run: |
+          node --version
+          npm --version
+          npm ci
+          npm run build
+      - name: Lint frontend (ESLint)
+        working-directory: ./frontend
+        run: npm run lint
+      - name: Lint frontend (Prettier)
+        working-directory: ./frontend
+        run: npm run format
+      - name: Run unit tests (backend)
+        working-directory: ./backend
+        run: ./gradlew test
+      - name: Run integration tests (backend)
+        working-directory: ./backend
+        run: ./gradlew integrationTest
+      - name: Liquibase migrations (validate changelogs)
+        working-directory: ./backend
+        run: ./gradlew liquibaseValidate
+      - name: Generate Jacoco report
+        working-directory: ./backend
+        run: ./gradlew jacocoTestReport
