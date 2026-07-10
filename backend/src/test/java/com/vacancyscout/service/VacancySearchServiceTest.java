@@ -21,8 +21,7 @@ public class VacancySearchServiceTest {
 
   private final VacancyRepository vacancyRepository = Mockito.mock(VacancyRepository.class);
 
-  private final VacancySearchService service =
-      new VacancySearchService(vacancyRepository);
+  private final VacancySearchService service = new VacancySearchService(vacancyRepository);
 
   @Test
   void search_withQuery_shouldReturnResults() {
