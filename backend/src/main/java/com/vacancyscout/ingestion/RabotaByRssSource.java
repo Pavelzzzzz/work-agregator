@@ -51,7 +51,8 @@ public class RabotaByRssSource {
         .retrieve()
         .bodyToMono(String.class)
         .flatMapMany(xml -> Flux.fromIterable(parseRss(xml)))
-        .doOnError(e -> LOG.error("Failed to fetch RSS for query '{}'", query, e));
+        .doOnError(e -> LOG.error("Failed to fetch RSS for query '{}'", query, e))
+        .onErrorResume(e -> Flux.empty());
   }
 
   List<RssItem> parseRss(String xml) {

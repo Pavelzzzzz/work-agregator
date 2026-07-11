@@ -35,6 +35,13 @@ export default [
     },
   },
   {
+    files: ["**/__tests__/**"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-this-alias": "off",
+    },
+  },
+  {
     ignores: ["dist/", "node_modules/"],
   },
 ];

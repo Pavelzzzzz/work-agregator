@@ -34,7 +34,8 @@ public class RabotaByVacancyDetailFetcher {
         .retrieve()
         .bodyToMono(String.class)
         .map(this::parseHtml)
-        .doOnError(e -> LOG.error("Failed to fetch vacancy detail: {}", url, e));
+        .doOnError(e -> LOG.error("Failed to fetch vacancy detail: {}", url, e))
+        .onErrorResume(e -> Mono.empty());
   }
 
   VacancyDetail parseHtml(String html) {

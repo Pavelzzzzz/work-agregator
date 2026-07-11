@@ -7,25 +7,25 @@
         placeholder="Search vacancies..."
         class="flex-1 min-w-[200px] border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         @keyup.enter="doSearch"
-      >
+      />
       <input
         v-model="filters.skillsText"
         type="text"
         placeholder="Skills (comma separated)"
         class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
+      />
       <input
         v-model="filters.minSalary"
         type="number"
         placeholder="Salary min"
         class="w-28 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
+      />
       <input
         v-model="filters.maxSalary"
         type="number"
         placeholder="Salary max"
         class="w-28 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
+      />
       <select v-model="filters.employmentType" class="border rounded-lg px-3 py-2 text-sm">
         <option value="">All types</option>
         <option value="FULL_TIME">Full-time</option>
@@ -34,7 +34,7 @@
         <option value="INTERNSHIP">Internship</option>
       </select>
       <label class="flex items-center gap-2 text-sm cursor-pointer whitespace-nowrap">
-        <input v-model="filters.remoteOnly" type="checkbox" class="rounded">
+        <input v-model="filters.remoteOnly" type="checkbox" class="rounded" />
         Remote only
       </label>
       <button

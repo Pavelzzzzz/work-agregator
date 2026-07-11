@@ -63,7 +63,7 @@ public class VacancyIngestionService {
   public void scheduledIngestion() {
     LOG.info("Starting scheduled vacancy ingestion for {} queries", searchQueries.length);
     Flux.fromArray(searchQueries)
-        .flatMap(query -> rssSource.fetch(query.trim()))
+        .flatMap(query -> rssSource.fetch(query.trim()), 3)
         .filter(item -> item.vacancyId() != null)
         .flatMap(this::processItem)
         .doOnComplete(() -> LOG.info("Scheduled ingestion completed"))
@@ -102,7 +102,7 @@ public class VacancyIngestionService {
             detail -> {
               var vacancy = mapToVacancy(item, detail);
               return ensureCompany(vacancy.companyName())
-                  .then(vacancyRepository.save(vacancy))
+                  .then(vacancyRepository.insertVacancy(vacancy))
                   .then(notify(vacancy));
             })
         .doOnError(e -> LOG.error("Failed to save vacancy: {}", item.link(), e))
@@ -113,26 +113,24 @@ public class VacancyIngestionService {
     if (companyName == null) {
       return Mono.empty();
     }
+    var now = LocalDateTime.now();
+    var company =
+        Company.builder()
+            .id(UUID.randomUUID())
+            .name(companyName)
+            .isActive(true)
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
     return companyRepository
-        .findByName(companyName)
-        .flatMap(
-            existing -> {
-              return Mono.<Void>empty();
-            })
-        .switchIfEmpty(
-            Mono.defer(
-                () -> {
-                  var now = LocalDateTime.now();
-                  var company =
-                      Company.builder()
-                          .id(UUID.randomUUID())
-                          .name(companyName)
-                          .isActive(true)
-                          .createdAt(now)
-                          .updatedAt(now)
-                          .build();
-                  return companyRepository.save(company).then();
-                }));
+        .save(company)
+        .then()
+        .onErrorResume(
+            e -> {
+              // Unique constraint violation — company was just created by another concurrent
+              // request
+              return Mono.empty();
+            });
   }
 
   private Vacancy mapToVacancy(
@@ -150,13 +148,16 @@ public class VacancyIngestionService {
         .title(detail.title() != null ? detail.title() : item.title())
         .companyName(detail.companyName() != null ? detail.companyName() : item.companyName())
         .companyWebsite(null)
-        .description(detail.description())
-        .requirements(detail.requirements())
-        .responsibilities(detail.responsibilities())
+        .description(detail.description() != null ? detail.description() : "")
+        .requirements(detail.requirements() != null ? detail.requirements() : "")
+        .responsibilities(detail.responsibilities() != null ? detail.responsibilities() : "")
         .salaryMin(salary != null ? salary.min() : null)
         .salaryMax(salary != null ? salary.max() : null)
-        .salaryCurrency(salary != null ? salary.currency() : null)
-        .location(detail.locality() != null ? detail.locality() : item.region())
+        .salaryCurrency(salary != null ? salary.currency() : "BYN")
+        .location(
+            detail.locality() != null
+                ? detail.locality()
+                : (item.region() != null ? item.region() : ""))
         .employmentType(empType)
         .experienceRequired(null)
         .skills(skills)

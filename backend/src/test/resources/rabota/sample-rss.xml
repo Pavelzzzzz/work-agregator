@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>rabota.by — вакансии</title>
+    <link>https://rabota.by</link>
+    <description>Поиск вакансий на rabota.by</description>
+    <item>
+      <title>Java Developer</title>
+      <link>https://rabota.by/vacancy/12345678</link>
+      <pubDate>2025-07-01T10:00:00+03:00</pubDate>
+      <description><![CDATA[<p>Вакансия компании: EPAM Systems</p><p>Регион: Минск</p><p>месячного дохода: 3000 - 5000 BYN</p>]]></description>
+    </item>
+    <item>
+      <title>Python Developer</title>
+      <link>https://rabota.by/vacancy/87654321</link>
+      <pubDate>2025-07-02T14:30:00+03:00</pubDate>
+      <description><![CDATA[<p>Вакансия компании: Wargaming</p><p>Регион: Минск</p><p>месячного дохода: 2500 - 4000 BYN</p>]]></description>
+    </item>
+    <item>
+      <title>DevOps Engineer</title>
+      <link>https://rabota.by/vacancy/11223344</link>
+      <pubDate>2025-07-03T09:15:00+03:00</pubDate>
+      <description><![CDATA[<p>Вакансия компании: Itransition</p><p>Регион: Гомель</p><p>месячного дохода: не указан</p>]]></description>
+    </item>
+  </channel>
+</rss>

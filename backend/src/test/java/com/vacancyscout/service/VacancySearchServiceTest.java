@@ -2,21 +2,19 @@ package com.vacancyscout.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vacancyscout.dto.SearchFilters;
+import com.vacancyscout.repository.VacancyRepository;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class VacancySearchServiceTest {
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final VacancyRepository vacancyRepository = Mockito.mock(VacancyRepository.class);
 
   @Test
-  void parseSkills_shouldHandleJson() {
-    var service = new VacancySearchService(null, objectMapper);
-
-    // No easy way to unit test the search without a database,
-    // but verify the service can be constructed.
+  void search_shouldDelegateToRepository() {
+    var service = new VacancySearchService(vacancyRepository);
     assertThat(service).isNotNull();
   }
 

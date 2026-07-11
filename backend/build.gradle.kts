@@ -51,6 +51,7 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation("org.testcontainers:junit-jupiter:1.19.7")
     testImplementation("org.testcontainers:r2dbc:1.19.7")
     testImplementation("org.testcontainers:postgresql:1.19.7")
     testImplementation("org.wiremock:wiremock:3.3.1")
@@ -72,7 +73,16 @@ liquibase {
 
 // Jacoco for test coverage
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    useJUnitPlatform {
+        includeTags("integration")
+    }
+    shouldRunAfter(tasks.test)
 }
 
 tasks.named<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoTestReport") {
@@ -120,4 +130,5 @@ tasks.named("pmdMain") {
 // Make check depend on all lint tasks
 tasks.named("check") {
     dependsOn(tasks.named("spotlessCheck"), tasks.named("checkstyleMain"), tasks.named("pmdMain"))
+    dependsOn(tasks.named("integrationTest"))
 }
