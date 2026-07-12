@@ -104,7 +104,10 @@ function loadVacancy(id: string) {
 
 onMounted(() => loadVacancy(route.params.id as string));
 
-watch(() => route.params.id, (newId) => {
-  if (newId && typeof newId === "string") loadVacancy(newId);
-});
+watch(
+  () => route.params.id,
+  (newId) => {
+    if (newId && typeof newId === "string") loadVacancy(newId);
+  },
+);
 </script>
