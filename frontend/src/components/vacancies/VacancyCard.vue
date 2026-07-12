@@ -1,5 +1,8 @@
 <template>
-  <div class="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+  <router-link
+    :to="`/vacancies/${id}`"
+    class="block border rounded-lg p-4 hover:shadow-md transition-shadow bg-white cursor-pointer"
+  >
     <div class="flex justify-between items-start gap-4">
       <div class="flex-1 min-w-0">
         <h3 class="font-semibold text-gray-900 truncate">{{ title }}</h3>
@@ -18,7 +21,7 @@
       <span>{{ location }}</span>
       <span>{{ postedAt }}</span>
     </div>
-  </div>
+  </router-link>
 </template>
 
 <script setup lang="ts">
@@ -26,6 +29,7 @@ import { computed } from "vue";
 import StatusBadge from "@/components/common/StatusBadge.vue";
 
 const props = defineProps<{
+  id: string;
   title: string;
   companyName: string;
   employmentType?: string | null;

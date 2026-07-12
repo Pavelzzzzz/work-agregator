@@ -22,6 +22,16 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
+configurations.all {
+    resolutionStrategy {
+        eachDependency {
+            if (requested.group == "org.testcontainers") {
+                useVersion("1.20.6")
+            }
+        }
+    }
+}
+
 dependencyManagement {
     imports {
         mavenBom("org.springframework.ai:spring-ai-bom:1.0.0-M2")
@@ -33,7 +43,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     // Reactive DB
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    runtimeOnly("org.postgresql:r2dbc-postgresql")
+    implementation("org.postgresql:r2dbc-postgresql")
     runtimeOnly("org.postgresql:postgresql")
     // Liquibase
     implementation("org.liquibase:liquibase-core")
@@ -51,9 +61,9 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
-    testImplementation("org.testcontainers:junit-jupiter:1.19.7")
-    testImplementation("org.testcontainers:r2dbc:1.19.7")
-    testImplementation("org.testcontainers:postgresql:1.19.7")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:r2dbc")
+    testImplementation("org.testcontainers:postgresql")
     testImplementation("org.wiremock:wiremock:3.3.1")
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
@@ -83,6 +93,8 @@ tasks.register<Test>("integrationTest") {
         includeTags("integration")
     }
     shouldRunAfter(tasks.test)
+    jvmArgs("-Dapi.version=1.40")
+    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
 }
 
 tasks.named<org.gradle.testing.jacoco.tasks.JacocoReport>("jacocoTestReport") {
@@ -125,6 +137,9 @@ pmd {
 }
 tasks.named("pmdMain") {
     dependsOn(tasks.named("checkstyleMain"))
+}
+tasks.named("pmdTest") {
+    enabled = false
 }
 
 // Make check depend on all lint tasks

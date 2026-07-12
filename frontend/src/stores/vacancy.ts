@@ -10,6 +10,7 @@ export const useVacancyStore = defineStore("vacancy", () => {
   const pageSize = ref(20);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const currentVacancy = ref<Vacancy | null>(null);
   const events = ref<VacancyUpdateEvent[]>([]);
   let unsubscribe: (() => void) | null = null;
 
@@ -24,6 +25,19 @@ export const useVacancyStore = defineStore("vacancy", () => {
       pageSize.value = resp.pageSize;
     } catch (e) {
       error.value = e instanceof Error ? e.message : "Search failed";
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchById(id: string) {
+    loading.value = true;
+    error.value = null;
+    currentVacancy.value = null;
+    try {
+      currentVacancy.value = await vacancyApi.getById(id);
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : "Failed to load vacancy";
     } finally {
       loading.value = false;
     }
@@ -51,8 +65,10 @@ export const useVacancyStore = defineStore("vacancy", () => {
     pageSize,
     loading,
     error,
+    currentVacancy,
     events,
     search,
+    fetchById,
     subscribe,
     unsubscribeUpdates,
   };

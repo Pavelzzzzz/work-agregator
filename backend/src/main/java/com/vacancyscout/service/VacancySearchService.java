@@ -4,6 +4,7 @@ import com.vacancyscout.dto.SearchFilters;
 import com.vacancyscout.dto.SearchResponse;
 import com.vacancyscout.model.Vacancy;
 import com.vacancyscout.repository.VacancyRepository;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -25,5 +26,9 @@ public class VacancySearchService {
 
     return Mono.zip(count, results)
         .map(tuple -> new SearchResponse<>(tuple.getT1(), tuple.getT2(), page, pageSize));
+  }
+
+  public Mono<Vacancy> findById(UUID id) {
+    return vacancyRepository.findById(id);
   }
 }

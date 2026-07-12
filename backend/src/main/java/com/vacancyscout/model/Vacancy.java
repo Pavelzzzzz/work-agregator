@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("vacancies")
@@ -25,11 +27,25 @@ public record Vacancy(
     String employmentType,
     String experienceRequired,
     List<String> skills,
+    String searchText,
     LocalDateTime postedAt,
     String url,
     boolean isActive,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt) {
+    LocalDateTime updatedAt)
+    implements Persistable<UUID> {
+
+  @Transient
+  @Override
+  public boolean isNew() {
+    return true;
+  }
+
+  @Override
+  public UUID getId() {
+    return id;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -51,6 +67,7 @@ public record Vacancy(
     private String employmentType;
     private String experienceRequired;
     private List<String> skills;
+    private String searchText;
     private LocalDateTime postedAt;
     private String url;
     private boolean isActive = true;
@@ -139,6 +156,11 @@ public record Vacancy(
       return this;
     }
 
+    public Builder searchText(String searchText) {
+      this.searchText = searchText;
+      return this;
+    }
+
     public Builder postedAt(LocalDateTime postedAt) {
       this.postedAt = postedAt;
       return this;
@@ -182,6 +204,7 @@ public record Vacancy(
           employmentType,
           experienceRequired,
           skills,
+          searchText,
           postedAt,
           url,
           isActive,

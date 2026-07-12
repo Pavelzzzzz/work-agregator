@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="v1.8.0-translation-surrogate-id" author="vacancyscout">
+        <addColumn tableName="vacancy_translations">
+            <column name="id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>UPDATE vacancy_translations SET id = gen_random_uuid()</sql>
+        <dropPrimaryKey tableName="vacancy_translations"
+                        constraintName="pk_vacancy_translations"/>
+        <addPrimaryKey tableName="vacancy_translations"
+                       columnNames="id"
+                       constraintName="pk_vacancy_translations"/>
+        <addUniqueConstraint tableName="vacancy_translations"
+                             columnNames="vacancy_id,lang"
+                             constraintName="uq_vacancy_translations_vacancy_lang"/>
+    </changeSet>
+</databaseChangeLog>

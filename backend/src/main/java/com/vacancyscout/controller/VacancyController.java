@@ -6,6 +6,7 @@ import com.vacancyscout.model.Vacancy;
 import com.vacancyscout.service.VacancySearchService;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -17,6 +18,11 @@ public class VacancyController {
 
   public VacancyController(VacancySearchService searchService) {
     this.searchService = searchService;
+  }
+
+  @GetMapping("/{id}")
+  public Mono<Vacancy> get(@PathVariable UUID id) {
+    return searchService.findById(id);
   }
 
   @GetMapping("/search")

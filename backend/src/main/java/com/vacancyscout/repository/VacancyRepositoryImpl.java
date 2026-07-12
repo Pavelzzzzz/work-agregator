@@ -1,12 +1,14 @@
 package com.vacancyscout.repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vacancyscout.dto.SearchFilters;
 import com.vacancyscout.model.Vacancy;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import org.springframework.r2dbc.core.DatabaseClient;
+import com.vacancyscout.model.VacancyTranslation;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,177 +16,167 @@ import reactor.core.publisher.Mono;
 @Repository
 public class VacancyRepositoryImpl implements VacancyRepositoryCustom {
 
-  private static final String INSERT_SQL =
-      """
-      INSERT INTO vacancies (id, source_id, source_name, title, company_name, company_website,
-        description, requirements, responsibilities, salary_min, salary_max, salary_currency,
-        location, employment_type, experience_required, skills, posted_at, url,
-        is_active, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-        CAST($16 AS jsonb), $17, $18, $19, $20, $21)
-      """;
+  private final R2dbcEntityTemplate entityTemplate;
 
-  private final DatabaseClient db;
-  private final ObjectMapper objectMapper;
-
-  public VacancyRepositoryImpl(DatabaseClient db, ObjectMapper objectMapper) {
-    this.db = db;
-    this.objectMapper = objectMapper;
+  public VacancyRepositoryImpl(R2dbcEntityTemplate entityTemplate) {
+    this.entityTemplate = entityTemplate;
   }
 
   @Override
   public Flux<Vacancy> searchAll(SearchFilters filters, int page, int pageSize) {
-    SqlBuilder sql = build(filters);
-    String query =
-        "SELECT v.* FROM vacancies v"
-            + sql.join
-            + " WHERE "
-            + sql.where
-            + " ORDER BY v.posted_at DESC LIMIT "
-            + pageSize
-            + " OFFSET "
-            + (page * pageSize);
-    return db.sql(query).bindValues(sql.params).mapProperties(Vacancy.class).all();
+    var criteria = buildCriteria(filters);
+    var query =
+        Query.query(criteria)
+            .sort(Sort.by("postedAt").descending())
+            .limit(pageSize)
+            .offset((long) page * pageSize);
+    return entityTemplate
+        .select(Vacancy.class)
+        .matching(query)
+        .all()
+        .filter(v -> matchesSkills(v, filters.skills()));
   }
 
   @Override
   public Mono<Long> countAll(SearchFilters filters) {
-    SqlBuilder sql = build(filters);
-    String query = "SELECT COUNT(*) AS cnt FROM vacancies v" + sql.join + " WHERE " + sql.where;
-    return db.sql(query)
-        .bindValues(sql.params)
-        .map((row, meta) -> row.get("cnt", Long.class))
-        .one();
+    var criteria = buildCriteria(filters);
+    var query = Query.query(criteria);
+    if (filters.skills() == null || filters.skills().isEmpty()) {
+      return entityTemplate.select(Vacancy.class).matching(query).count();
+    }
+    return entityTemplate
+        .select(Vacancy.class)
+        .matching(query)
+        .all()
+        .filter(v -> matchesSkills(v, filters.skills()))
+        .count();
   }
 
   @Override
   public Mono<Void> insertVacancy(Vacancy vacancy) {
-    try {
-      String skillsJson = objectMapper.writeValueAsString(vacancy.skills());
-      var spec =
-          db.sql(INSERT_SQL)
-              .bind(0, vacancy.id())
-              .bind(1, vacancy.sourceId())
-              .bind(2, vacancy.sourceName())
-              .bind(3, vacancy.title())
-              .bind(4, vacancy.companyName());
-
-      spec = bindValue(spec, 5, vacancy.companyWebsite());
-      spec = bindValue(spec, 6, vacancy.description());
-      spec = bindValue(spec, 7, vacancy.requirements());
-      spec = bindValue(spec, 8, vacancy.responsibilities());
-
-      spec = bindValue(spec, 9, vacancy.salaryMin());
-      spec = bindValue(spec, 10, vacancy.salaryMax());
-      spec = bindValue(spec, 11, vacancy.salaryCurrency());
-      spec = bindValue(spec, 12, vacancy.location());
-      spec = bindValue(spec, 13, vacancy.employmentType());
-      spec = bindValue(spec, 14, vacancy.experienceRequired());
-
-      spec = spec.bind(15, skillsJson);
-
-      spec = bindValue(spec, 16, vacancy.postedAt());
-      spec = bindValue(spec, 17, vacancy.url());
-      spec =
-          spec.bind(18, vacancy.isActive())
-              .bind(19, vacancy.createdAt())
-              .bind(20, vacancy.updatedAt());
-
-      return spec.then();
-    } catch (JsonProcessingException e) {
-      return Mono.error(e);
-    }
+    String searchText = buildSearchText(vacancy);
+    Vacancy enriched =
+        Vacancy.builder()
+            .id(vacancy.id())
+            .sourceId(vacancy.sourceId())
+            .sourceName(vacancy.sourceName())
+            .title(vacancy.title())
+            .companyName(vacancy.companyName())
+            .companyWebsite(vacancy.companyWebsite())
+            .description(vacancy.description())
+            .requirements(vacancy.requirements())
+            .responsibilities(vacancy.responsibilities())
+            .salaryMin(vacancy.salaryMin())
+            .salaryMax(vacancy.salaryMax())
+            .salaryCurrency(vacancy.salaryCurrency())
+            .location(vacancy.location())
+            .employmentType(vacancy.employmentType())
+            .experienceRequired(vacancy.experienceRequired())
+            .skills(vacancy.skills())
+            .searchText(searchText)
+            .postedAt(vacancy.postedAt())
+            .url(vacancy.url())
+            .isActive(vacancy.isActive())
+            .createdAt(vacancy.createdAt())
+            .updatedAt(vacancy.updatedAt())
+            .build();
+    return entityTemplate.insert(Vacancy.class).using(enriched).then(insertTranslationFor(vacancy));
   }
 
-  private DatabaseClient.GenericExecuteSpec bindValue(
-      DatabaseClient.GenericExecuteSpec spec, int index, Object value) {
-    if (value == null) {
-      Class<?> type = inferType(index);
-      return spec.bindNull(index, type);
-    }
-    return spec.bind(index, value);
+  private Mono<Void> insertTranslationFor(Vacancy vacancy) {
+    String lang = langForSource(vacancy.sourceName());
+    var translation =
+        new VacancyTranslation(
+            UUID.randomUUID(),
+            vacancy.id(),
+            lang,
+            vacancy.title(),
+            vacancy.companyName(),
+            vacancy.description(),
+            vacancy.requirements(),
+            vacancy.responsibilities());
+    return entityTemplate.insert(VacancyTranslation.class).using(translation).then();
   }
 
-  private static Class<?> inferType(int index) {
-    return switch (index) {
-      case 5, 6, 7, 8, 11, 12, 13, 14, 17 -> String.class;
-      case 9, 10 -> java.math.BigDecimal.class;
-      case 16 -> java.time.LocalDateTime.class;
-      default -> String.class;
-    };
+  private static String buildSearchText(Vacancy v) {
+    return String.join(
+        " ",
+        nullToEmpty(v.title()),
+        nullToEmpty(v.companyName()),
+        nullToEmpty(v.description()),
+        nullToEmpty(v.requirements()),
+        nullToEmpty(v.responsibilities()));
   }
 
-  private static SqlBuilder build(SearchFilters filters) {
-    var params = new LinkedHashMap<String, Object>();
-    var where = new StringBuilder("v.is_active = true");
-    String join = "";
-
-    if (hasText(filters.query())) {
-      String lang = resolveLang(filters.language());
-      join = " LEFT JOIN vacancy_translations vt ON vt.vacancy_id = v.id AND vt.lang = :lang";
-      params.put("lang", lang);
-      where.append(" AND vt.search_vector @@ to_tsquery(:query)");
-      params.put("query", filters.query());
-    }
-
-    if (hasText(filters.source())) {
-      where.append(" AND v.source_name = :source");
-      params.put("source", filters.source());
-    }
-
-    if (hasText(filters.employmentType())) {
-      where.append(" AND v.employment_type = :employmentType");
-      params.put("employmentType", filters.employmentType());
-    }
-
-    if (hasText(filters.companyName())) {
-      where.append(" AND v.company_name ILIKE '%' || :companyName || '%'");
-      params.put("companyName", filters.companyName());
-    }
-
-    if (hasText(filters.location())) {
-      where.append(" AND v.location ILIKE '%' || :location || '%'");
-      params.put("location", filters.location());
-    }
-
-    if (filters.remoteOnly() != null && filters.remoteOnly()) {
-      where.append(" AND v.location IS NULL");
-    }
-
-    if (filters.minSalary() != null) {
-      where.append(" AND (v.salary_max >= :minSalary OR v.salary_min >= :minSalary)");
-      params.put("minSalary", filters.minSalary());
-    }
-
-    if (filters.maxSalary() != null) {
-      where.append(" AND (v.salary_min <= :maxSalary OR v.salary_max <= :maxSalary)");
-      params.put("maxSalary", filters.maxSalary());
-    }
-
-    if (filters.skills() != null && !filters.skills().isEmpty()) {
-      where.append(" AND v.skills ?| string_to_array(:skills, ',')");
-      params.put("skills", String.join(",", filters.skills()));
-    }
-
-    return new SqlBuilder(join, where.toString(), params);
+  private static String nullToEmpty(String s) {
+    return s != null ? s : "";
   }
 
-  private static String resolveLang(String lang) {
-    if (lang == null) {
+  private static boolean matchesSkills(Vacancy v, List<String> skills) {
+    if (skills == null || skills.isEmpty()) {
+      return true;
+    }
+    if (v.skills() == null || v.skills().isEmpty()) {
+      return false;
+    }
+    for (String s : skills) {
+      if (v.skills().contains(s)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static Criteria buildCriteria(SearchFilters f) {
+    var c = Criteria.where("isActive").is(true);
+
+    if (isNotBlank(f.query())) {
+      String textQuery = f.query().replaceAll("[&|!():*]", " ").replaceAll("\\s+", " ").trim();
+      c = c.and(Criteria.where("searchText").like("%" + textQuery + "%").ignoreCase(true));
+    }
+    if (isNotBlank(f.source())) {
+      c = c.and(Criteria.where("sourceName").is(f.source()));
+    }
+    if (isNotBlank(f.employmentType())) {
+      c = c.and(Criteria.where("employmentType").is(f.employmentType()));
+    }
+    if (isNotBlank(f.companyName())) {
+      c = c.and(Criteria.where("companyName").like("%" + f.companyName() + "%"));
+    }
+    if (isNotBlank(f.location())) {
+      c = c.and(Criteria.where("location").like("%" + f.location() + "%"));
+    }
+    if (f.remoteOnly() != null && f.remoteOnly()) {
+      c = c.and(Criteria.where("location").isNull());
+    }
+    if (f.minSalary() != null) {
+      c =
+          c.and(
+              Criteria.where("salaryMax")
+                  .greaterThanOrEquals(f.minSalary())
+                  .or("salaryMin")
+                  .greaterThanOrEquals(f.minSalary()));
+    }
+    if (f.maxSalary() != null) {
+      c =
+          c.and(
+              Criteria.where("salaryMin")
+                  .lessThanOrEquals(f.maxSalary())
+                  .or("salaryMax")
+                  .lessThanOrEquals(f.maxSalary()));
+    }
+
+    return c;
+  }
+
+  private static String langForSource(String source) {
+    if ("RABOTA_BY".equals(source) || "HH_RU".equals(source)) {
       return "russian";
     }
-    if ("ru".equalsIgnoreCase(lang)) {
-      return "russian";
-    }
-    if ("en".equalsIgnoreCase(lang)) {
-      return "english";
-    }
-    return lang;
+    return "english";
   }
 
-  private static boolean hasText(String s) {
+  private static boolean isNotBlank(String s) {
     return s != null && !s.isBlank();
   }
-
-  private record SqlBuilder(String join, String where, Map<String, Object> params) {}
 }

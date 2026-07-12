@@ -55,6 +55,7 @@
       <div class="text-sm text-gray-500 mb-2">{{ store.total }} vacancies found</div>
       <VacancyCard
         v-for="v in store.results"
+        :id="v.id"
         :key="v.id"
         :title="v.title || 'Untitled'"
         :company-name="v.companyName || ''"
@@ -72,13 +73,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useVacancyStore } from "@/stores/vacancy";
 import VacancyCard from "@/components/vacancies/VacancyCard.vue";
 import Spinner from "@/components/common/Spinner.vue";
 
 const store = useVacancyStore();
 const query = ref("");
+
+onMounted(() => doSearch());
 
 const filters = reactive({
   employmentType: "",

@@ -35,20 +35,38 @@ class VacancyIngestionServiceTest {
   void setUp() {
     service =
         new VacancyIngestionService(
-            rssSource, detailFetcher, vacancyRepository, companyRepository, updateStream,
+            rssSource,
+            detailFetcher,
+            vacancyRepository,
+            companyRepository,
+            updateStream,
             "java,python");
   }
 
   private RabotaByRssSource.RssItem sampleItem(String id, String title, String company) {
     return new RabotaByRssSource.RssItem(
-        id, title, "https://rabota.by/vacancy/" + id, company, "Минск", "3000 BYN",
+        id,
+        title,
+        "https://rabota.by/vacancy/" + id,
+        company,
+        "Минск",
+        "3000 BYN",
         LocalDateTime.of(2025, 7, 1, 10, 0));
   }
 
   private RabotaByVacancyDetailFetcher.VacancyDetail sampleDetail(String id, String title) {
     return new RabotaByVacancyDetailFetcher.VacancyDetail(
-        id, title, "EPAM Systems", "Минск", "Беларусь", "2025-07-01", "FULLTIME",
-        "<p>description</p>", "requirements", "responsibilities", List.of("Java", "Spring"));
+        id,
+        title,
+        "EPAM Systems",
+        "Минск",
+        "Беларусь",
+        "2025-07-01",
+        "FULLTIME",
+        "<p>description</p>",
+        "requirements",
+        "responsibilities",
+        List.of("Java", "Spring"));
   }
 
   @Test

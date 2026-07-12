@@ -9,10 +9,11 @@
       No companies found.
     </div>
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div
+      <router-link
         v-for="c in store.companies"
         :key="c.id"
-        class="border rounded-lg p-5 bg-white hover:shadow-md transition-shadow"
+        :to="`/companies/${encodeURIComponent(c.name)}`"
+        class="block border rounded-lg p-5 bg-white hover:shadow-md transition-shadow"
       >
         <div class="flex justify-between items-start">
           <div>
@@ -37,7 +38,7 @@
             >Website →</a
           >
         </div>
-      </div>
+      </router-link>
     </div>
   </div>
 </template>

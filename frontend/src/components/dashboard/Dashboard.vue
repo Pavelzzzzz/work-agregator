@@ -28,9 +28,10 @@
           {{ companyStore.error }}
         </div>
         <div v-else>
-          <div
+          <router-link
             v-for="c in companyStore.companies"
             :key="c.id"
+            :to="`/companies/${encodeURIComponent(c.name)}`"
             class="flex justify-between items-center px-5 py-3 border-b last:border-b-0 hover:bg-gray-50"
           >
             <div>
@@ -38,7 +39,7 @@
               <p class="text-xs text-gray-500">{{ c.description }}</p>
             </div>
             <StatusBadge :variant="c.isActive ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
-          </div>
+          </router-link>
           <div v-if="!companyStore.companies.length" class="p-5 text-sm text-gray-400 text-center">
             No companies yet
           </div>

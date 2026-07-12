@@ -2,123 +2,93 @@ package com.vacancyscout.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vacancyscout.AbstractIntegrationTest;
 import com.vacancyscout.dto.SearchFilters;
 import com.vacancyscout.dto.SearchResponse;
 import com.vacancyscout.model.Vacancy;
+import com.vacancyscout.model.VacancyTranslation;
+import com.vacancyscout.repository.VacancyRepository;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.r2dbc.core.DatabaseClient;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 
 @Tag("integration")
 class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Autowired private VacancySearchService searchService;
 
-  @Autowired private DatabaseClient db;
+  @Autowired private R2dbcEntityTemplate entityTemplate;
 
-  @Autowired private ObjectMapper objectMapper;
+  @Autowired private VacancyRepository vacancyRepository;
 
   @BeforeEach
   void setUp() {
-    db.sql("TRUNCATE TABLE vacancy_translations, vacancies CASCADE").then().block();
-  }
-
-  private UUID createVacancy(
-      String title,
-      String companyName,
-      String sourceName,
-      String location,
-      String employmentType,
-      BigDecimal salaryMin,
-      BigDecimal salaryMax,
-      List<String> skills,
-      boolean isActive) {
-    UUID id = UUID.randomUUID();
-    String skillsJson = "[]";
-    if (skills != null && !skills.isEmpty()) {
-      try {
-        skillsJson = objectMapper.writeValueAsString(skills);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    db.sql(
-            "INSERT INTO vacancies "
-                + "(id, source_id, source_name, title, company_name, "
-                + "employment_type, salary_min, salary_max, skills, location, "
-                + "is_active, posted_at, created_at, updated_at) "
-                + "VALUES ($0, $1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, "
-                + "$10, NOW(), NOW(), NOW())")
-        .bind("0", id)
-        .bind("1", "src-" + UUID.randomUUID())
-        .bind("2", sourceName)
-        .bind("3", title)
-        .bind("4", companyName)
-        .bind("5", employmentType)
-        .bind("6", salaryMin)
-        .bind("7", salaryMax)
-        .bind("8", skillsJson)
-        .bind("9", location)
-        .bind("10", isActive)
-        .then()
+    entityTemplate
+        .delete(VacancyTranslation.class)
+        .matching(Query.query(Criteria.empty()))
+        .all()
+        .then(vacancyRepository.deleteAll())
         .block();
-    return id;
   }
 
-  private void createTranslation(UUID vacancyId, String lang, String title, String description) {
-    db.sql(
-            "INSERT INTO vacancy_translations "
-                + "(vacancy_id, lang, title, description, search_vector) "
-                + "VALUES ($0, $1, $2, $3, "
-                + "to_tsvector($1, COALESCE($2, '') || ' ' || COALESCE($3, '')))")
-        .bind("0", vacancyId)
-        .bind("1", lang)
-        .bind("2", title)
-        .bind("3", description)
-        .then()
+  private Vacancy.Builder aVacancy(String title, String company, String source) {
+    return Vacancy.builder()
+        .id(UUID.randomUUID())
+        .sourceId("src-" + UUID.randomUUID())
+        .sourceName(source)
+        .title(title)
+        .companyName(company)
+        .isActive(true)
+        .postedAt(LocalDateTime.now())
+        .createdAt(LocalDateTime.now())
+        .updatedAt(LocalDateTime.now());
+  }
+
+  private Vacancy persist(Vacancy.Builder b) {
+    return vacancyRepository.save(b.build()).block();
+  }
+
+  private void insertTranslation(UUID vacancyId, String lang, String title, String description) {
+    entityTemplate
+        .insert(VacancyTranslation.class)
+        .using(
+            new VacancyTranslation(
+                UUID.randomUUID(), vacancyId, lang, title, null, description, null, null))
         .block();
   }
 
   @Test
   void search_withoutFilters_returnsAllActive() {
-    createVacancy(
-        "Dev 1",
-        "Company A",
-        "SOURCE_1",
-        "Minsk",
-        "FULL_TIME",
-        BigDecimal.valueOf(1000),
-        BigDecimal.valueOf(2000),
-        List.of("Java"),
-        true);
-    createVacancy(
-        "Dev 2",
-        "Company B",
-        "SOURCE_2",
-        "Remote",
-        "PART_TIME",
-        BigDecimal.valueOf(1500),
-        BigDecimal.valueOf(2500),
-        List.of("Python"),
-        true);
-    createVacancy(
-        "Dev 3",
-        "Company C",
-        "SOURCE_1",
-        "Moscow",
-        "CONTRACT",
-        BigDecimal.valueOf(500),
-        BigDecimal.valueOf(1000),
-        List.of("Go"),
-        false);
+    persist(
+        aVacancy("Dev 1", "Company A", "SOURCE_1")
+            .location("Minsk")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(1000))
+            .salaryMax(BigDecimal.valueOf(2000))
+            .skills(List.of("Java")));
+    persist(
+        aVacancy("Dev 2", "Company B", "SOURCE_2")
+            .location("Remote")
+            .employmentType("PART_TIME")
+            .salaryMin(BigDecimal.valueOf(1500))
+            .salaryMax(BigDecimal.valueOf(2500))
+            .skills(List.of("Python")));
+    persist(
+        aVacancy("Dev 3", "Company C", "SOURCE_1")
+            .location("Moscow")
+            .employmentType("CONTRACT")
+            .salaryMin(BigDecimal.valueOf(500))
+            .salaryMax(BigDecimal.valueOf(1000))
+            .skills(List.of("Go"))
+            .isActive(false));
 
     SearchFilters filters =
         new SearchFilters(null, null, null, null, null, null, null, null, null, null, 0, 20);
@@ -134,36 +104,27 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_byFullTextQuery_returnsMatching() {
-    UUID id1 =
-        createVacancy(
-            "Java Developer",
-            "Company A",
-            "SOURCE_1",
-            "Minsk",
-            "FULL_TIME",
-            null,
-            null,
-            null,
-            true);
-    createTranslation(
-        id1,
+    Vacancy v1 =
+        persist(
+            aVacancy("Java Developer", "Company A", "SOURCE_1")
+                .location("Minsk")
+                .employmentType("FULL_TIME"));
+    insertTranslation(
+        v1.id(),
         "english",
         "Java Developer",
         "We need a skilled Java developer with Spring Boot experience");
 
-    UUID id2 =
-        createVacancy(
-            "Python Developer",
-            "Company B",
-            "SOURCE_1",
-            "Minsk",
-            "FULL_TIME",
-            null,
-            null,
-            null,
-            true);
-    createTranslation(
-        id2, "english", "Python Developer", "We need a Python developer with Django experience");
+    Vacancy v2 =
+        persist(
+            aVacancy("Python Developer", "Company B", "SOURCE_1")
+                .location("Minsk")
+                .employmentType("FULL_TIME"));
+    insertTranslation(
+        v2.id(),
+        "english",
+        "Python Developer",
+        "We need a Python developer with Django experience");
 
     SearchFilters filters =
         new SearchFilters(
@@ -178,9 +139,11 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_bySource_filtersCorrectly() {
-    createVacancy("Dev 1", "Company A", "RABOTA_BY", "Minsk", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 2", "Company B", "HH_RU", "Moscow", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 3", "Company C", "RABOTA_BY", "SPB", "PART_TIME", null, null, null, true);
+    persist(
+        aVacancy("Dev 1", "Company A", "RABOTA_BY").location("Minsk").employmentType("FULL_TIME"));
+    persist(aVacancy("Dev 2", "Company B", "HH_RU").location("Moscow").employmentType("FULL_TIME"));
+    persist(
+        aVacancy("Dev 3", "Company C", "RABOTA_BY").location("SPB").employmentType("PART_TIME"));
 
     SearchFilters filters =
         new SearchFilters(null, null, "RABOTA_BY", null, null, null, null, null, null, null, 0, 20);
@@ -191,14 +154,14 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
     assertThat(response.results()).hasSize(2);
     assertThat(response.results())
         .extracting(Vacancy::sourceName)
-        .allMatch(s -> s.equals("RABOTA_BY"));
+        .allMatch(s -> "RABOTA_BY".equals(s));
   }
 
   @Test
   void search_byEmploymentType_filtersCorrectly() {
-    createVacancy("Dev 1", "Company A", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 2", "Company B", "SRC", "Minsk", "PART_TIME", null, null, null, true);
-    createVacancy("Dev 3", "Company C", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
+    persist(aVacancy("Dev 1", "Company A", "SRC").location("Minsk").employmentType("FULL_TIME"));
+    persist(aVacancy("Dev 2", "Company B", "SRC").location("Minsk").employmentType("PART_TIME"));
+    persist(aVacancy("Dev 3", "Company C", "SRC").location("Minsk").employmentType("FULL_TIME"));
 
     SearchFilters filters =
         new SearchFilters(null, null, null, "PART_TIME", null, null, null, null, null, null, 0, 20);
@@ -212,10 +175,12 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_byCompanyName_filtersCorrectly() {
-    createVacancy("Dev 1", "EPAM Systems", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 2", "Google", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
-    createVacancy(
-        "Dev 3", "EPAM Technologies", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
+    persist(aVacancy("Dev 1", "EPAM Systems", "SRC").location("Minsk").employmentType("FULL_TIME"));
+    persist(aVacancy("Dev 2", "Google", "SRC").location("Minsk").employmentType("FULL_TIME"));
+    persist(
+        aVacancy("Dev 3", "EPAM Technologies", "SRC")
+            .location("Minsk")
+            .employmentType("FULL_TIME"));
 
     SearchFilters filters =
         new SearchFilters(null, null, null, null, null, null, null, "EPAM", null, null, 0, 20);
@@ -231,9 +196,10 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_byLocation_filtersCorrectly() {
-    createVacancy("Dev 1", "Company A", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 2", "Company B", "SRC", "Moscow", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 3", "Company C", "SRC", "Minsk City", "FULL_TIME", null, null, null, true);
+    persist(aVacancy("Dev 1", "Company A", "SRC").location("Minsk").employmentType("FULL_TIME"));
+    persist(aVacancy("Dev 2", "Company B", "SRC").location("Moscow").employmentType("FULL_TIME"));
+    persist(
+        aVacancy("Dev 3", "Company C", "SRC").location("Minsk City").employmentType("FULL_TIME"));
 
     SearchFilters filters =
         new SearchFilters(null, null, null, null, null, null, null, null, "Minsk", null, 0, 20);
@@ -249,9 +215,10 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_remoteOnly_excludesLocated() {
-    createVacancy("Dev 1", "Company A", "SRC", "Minsk", "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 2", "Company B", "SRC", null, "FULL_TIME", null, null, null, true);
-    createVacancy("Dev 3", "Company C", "SRC", "Remote OK", "FULL_TIME", null, null, null, true);
+    persist(aVacancy("Dev 1", "Company A", "SRC").location("Minsk").employmentType("FULL_TIME"));
+    persist(aVacancy("Dev 2", "Company B", "SRC").employmentType("FULL_TIME"));
+    persist(
+        aVacancy("Dev 3", "Company C", "SRC").location("Remote OK").employmentType("FULL_TIME"));
 
     SearchFilters filters =
         new SearchFilters(null, null, null, null, null, null, null, null, null, true, 0, 20);
@@ -265,36 +232,21 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_byMinSalary_filtersCorrectly() {
-    createVacancy(
-        "Dev 1",
-        "Company A",
-        "SRC",
-        null,
-        "FULL_TIME",
-        BigDecimal.valueOf(1000),
-        BigDecimal.valueOf(2000),
-        null,
-        true);
-    createVacancy(
-        "Dev 2",
-        "Company B",
-        "SRC",
-        null,
-        "FULL_TIME",
-        BigDecimal.valueOf(3000),
-        BigDecimal.valueOf(4000),
-        null,
-        true);
-    createVacancy(
-        "Dev 3",
-        "Company C",
-        "SRC",
-        null,
-        "FULL_TIME",
-        BigDecimal.valueOf(500),
-        BigDecimal.valueOf(800),
-        null,
-        true);
+    persist(
+        aVacancy("Dev 1", "Company A", "SRC")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(1000))
+            .salaryMax(BigDecimal.valueOf(2000)));
+    persist(
+        aVacancy("Dev 2", "Company B", "SRC")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(3000))
+            .salaryMax(BigDecimal.valueOf(4000)));
+    persist(
+        aVacancy("Dev 3", "Company C", "SRC")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(500))
+            .salaryMax(BigDecimal.valueOf(800)));
 
     SearchFilters filters =
         new SearchFilters(
@@ -311,36 +263,21 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_byMaxSalary_filtersCorrectly() {
-    createVacancy(
-        "Dev 1",
-        "Company A",
-        "SRC",
-        null,
-        "FULL_TIME",
-        BigDecimal.valueOf(1000),
-        BigDecimal.valueOf(2000),
-        null,
-        true);
-    createVacancy(
-        "Dev 2",
-        "Company B",
-        "SRC",
-        null,
-        "FULL_TIME",
-        BigDecimal.valueOf(3000),
-        BigDecimal.valueOf(4000),
-        null,
-        true);
-    createVacancy(
-        "Dev 3",
-        "Company C",
-        "SRC",
-        null,
-        "FULL_TIME",
-        BigDecimal.valueOf(500),
-        BigDecimal.valueOf(800),
-        null,
-        true);
+    persist(
+        aVacancy("Dev 1", "Company A", "SRC")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(1000))
+            .salaryMax(BigDecimal.valueOf(2000)));
+    persist(
+        aVacancy("Dev 2", "Company B", "SRC")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(3000))
+            .salaryMax(BigDecimal.valueOf(4000)));
+    persist(
+        aVacancy("Dev 3", "Company C", "SRC")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(500))
+            .salaryMax(BigDecimal.valueOf(800)));
 
     SearchFilters filters =
         new SearchFilters(
@@ -357,28 +294,18 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_bySkills_filtersCorrectly() {
-    createVacancy(
-        "Dev 1",
-        "Company A",
-        "SRC",
-        null,
-        "FULL_TIME",
-        null,
-        null,
-        List.of("Java", "Spring", "PostgreSQL"),
-        true);
-    createVacancy(
-        "Dev 2",
-        "Company B",
-        "SRC",
-        null,
-        "FULL_TIME",
-        null,
-        null,
-        List.of("Python", "Django"),
-        true);
-    createVacancy(
-        "Dev 3", "Company C", "SRC", null, "FULL_TIME", null, null, List.of("Java", "React"), true);
+    persist(
+        aVacancy("Dev 1", "Company A", "SRC")
+            .employmentType("FULL_TIME")
+            .skills(List.of("Java", "Spring", "PostgreSQL")));
+    persist(
+        aVacancy("Dev 2", "Company B", "SRC")
+            .employmentType("FULL_TIME")
+            .skills(List.of("Python", "Django")));
+    persist(
+        aVacancy("Dev 3", "Company C", "SRC")
+            .employmentType("FULL_TIME")
+            .skills(List.of("Java", "React")));
 
     SearchFilters filters =
         new SearchFilters(
@@ -393,36 +320,27 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_withCombinedFilters_returnsIntersection() {
-    createVacancy(
-        "Dev 1",
-        "EPAM",
-        "RABOTA_BY",
-        "Minsk",
-        "FULL_TIME",
-        BigDecimal.valueOf(2000),
-        BigDecimal.valueOf(3000),
-        List.of("Java", "Spring"),
-        true);
-    createVacancy(
-        "Dev 2",
-        "EPAM",
-        "RABOTA_BY",
-        "Minsk",
-        "PART_TIME",
-        BigDecimal.valueOf(1000),
-        BigDecimal.valueOf(1500),
-        List.of("Java"),
-        true);
-    createVacancy(
-        "Dev 3",
-        "Google",
-        "HH_RU",
-        "Moscow",
-        "FULL_TIME",
-        BigDecimal.valueOf(5000),
-        BigDecimal.valueOf(7000),
-        List.of("Go", "Kubernetes"),
-        true);
+    persist(
+        aVacancy("Dev 1", "EPAM", "RABOTA_BY")
+            .location("Minsk")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(2000))
+            .salaryMax(BigDecimal.valueOf(3000))
+            .skills(List.of("Java", "Spring")));
+    persist(
+        aVacancy("Dev 2", "EPAM", "RABOTA_BY")
+            .location("Minsk")
+            .employmentType("PART_TIME")
+            .salaryMin(BigDecimal.valueOf(1000))
+            .salaryMax(BigDecimal.valueOf(1500))
+            .skills(List.of("Java")));
+    persist(
+        aVacancy("Dev 3", "Google", "HH_RU")
+            .location("Moscow")
+            .employmentType("FULL_TIME")
+            .salaryMin(BigDecimal.valueOf(5000))
+            .salaryMax(BigDecimal.valueOf(7000))
+            .skills(List.of("Go", "Kubernetes")));
 
     SearchFilters filters =
         new SearchFilters(
@@ -449,7 +367,7 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
   @Test
   void search_pagination_returnsCorrectPage() {
     for (int i = 0; i < 5; i++) {
-      createVacancy("Dev " + i, "Company", "SRC", null, "FULL_TIME", null, null, null, true);
+      persist(aVacancy("Dev " + i, "Company", "SRC").employmentType("FULL_TIME"));
     }
 
     SearchFilters page0 =
@@ -478,32 +396,26 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
   @Test
   void search_allFiltersApplied_returnsCorrectCount() {
-    UUID id1 =
-        createVacancy(
-            "Java Dev",
-            "EPAM",
-            "RABOTA_BY",
-            "Minsk",
-            "FULL_TIME",
-            BigDecimal.valueOf(2000),
-            BigDecimal.valueOf(3000),
-            List.of("Java", "Spring"),
-            true);
-    createTranslation(
-        id1, "english", "Java Dev", "Senior Java developer position at EPAM in Minsk");
+    Vacancy v1 =
+        persist(
+            aVacancy("Java Dev", "EPAM", "RABOTA_BY")
+                .location("Minsk")
+                .employmentType("FULL_TIME")
+                .salaryMin(BigDecimal.valueOf(2000))
+                .salaryMax(BigDecimal.valueOf(3000))
+                .skills(List.of("Java", "Spring")));
+    insertTranslation(
+        v1.id(), "english", "Java Dev", "Senior Java developer position at EPAM in Minsk");
 
-    UUID id2 =
-        createVacancy(
-            "Java Dev",
-            "Other",
-            "HH_RU",
-            "Moscow",
-            "PART_TIME",
-            BigDecimal.valueOf(1000),
-            BigDecimal.valueOf(1500),
-            List.of("Java"),
-            true);
-    createTranslation(id2, "english", "Java Dev", "Junior Java developer position in Moscow");
+    Vacancy v2 =
+        persist(
+            aVacancy("Java Dev", "Other", "HH_RU")
+                .location("Moscow")
+                .employmentType("PART_TIME")
+                .salaryMin(BigDecimal.valueOf(1000))
+                .salaryMax(BigDecimal.valueOf(1500))
+                .skills(List.of("Java")));
+    insertTranslation(v2.id(), "english", "Java Dev", "Junior Java developer position in Moscow");
 
     SearchFilters filters =
         new SearchFilters(
@@ -524,6 +436,6 @@ class VacancySearchServiceIntegrationTest extends AbstractIntegrationTest {
 
     assertThat(response.total()).isEqualTo(1);
     assertThat(response.results()).hasSize(1);
-    assertThat(response.results().get(0).id()).isEqualTo(id1);
+    assertThat(response.results().get(0).id()).isEqualTo(v1.id());
   }
 }

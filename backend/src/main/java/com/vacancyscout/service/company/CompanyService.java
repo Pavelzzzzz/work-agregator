@@ -23,6 +23,10 @@ public class CompanyService {
     return companyRepository.findById(id);
   }
 
+  public Mono<Company> getByName(String name) {
+    return companyRepository.findByName(name);
+  }
+
   public Mono<Company> create(Company company) {
     return companyRepository.save(company);
   }

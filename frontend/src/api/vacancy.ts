@@ -1,7 +1,11 @@
 import apiClient from "./client";
-import type { SearchFilters, SearchResponse, VacancyUpdateEvent } from "@/types/vacancy";
+import type { SearchFilters, SearchResponse, VacancyUpdateEvent, Vacancy } from "@/types/vacancy";
 
 export const vacancyApi = {
+  getById(id: string): Promise<Vacancy> {
+    return apiClient.get(`/vacancies/${id}`).then((r) => r.data);
+  },
+
   search(filters: SearchFilters): Promise<SearchResponse> {
     const params: Record<string, string | number | boolean> = {};
     if (filters.query) params.q = filters.query;

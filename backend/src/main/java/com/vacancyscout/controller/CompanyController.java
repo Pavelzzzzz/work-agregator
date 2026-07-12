@@ -21,6 +21,11 @@ public class CompanyController {
     return companyService.listAll();
   }
 
+  @GetMapping("/by-name")
+  public Mono<Company> getByName(@RequestParam String name) {
+    return companyService.getByName(name);
+  }
+
   @GetMapping("/{id}")
   public Mono<Company> get(@PathVariable UUID id) {
     return companyService.getById(id);

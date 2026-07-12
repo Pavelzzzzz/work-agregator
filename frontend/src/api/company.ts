@@ -10,6 +10,10 @@ export const companyApi = {
     return apiClient.get(`/companies/${id}`).then((r) => r.data);
   },
 
+  getByName(name: string): Promise<Company> {
+    return apiClient.get("/companies/by-name", { params: { name } }).then((r) => r.data);
+  },
+
   create(data: Partial<Company>): Promise<Company> {
     return apiClient.post("/companies", data).then((r) => r.data);
   },
