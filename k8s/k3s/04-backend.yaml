@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vacancy-scout-backend
+  namespace: vacancy-scout
+  labels:
+    app.kubernetes.io/part-of: vacancy-scout
+    app.kubernetes.io/component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vacancy-scout-backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vacancy-scout-backend
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: backend
+          image: vacancy-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-host
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-password
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-username
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-name
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-port
+            - name: R2DBC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: r2dbc-url
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: redis-host
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: redis-port
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k3s"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vacancy-scout-backend
+  namespace: vacancy-scout
+  labels:
+    app.kubernetes.io/part-of: vacancy-scout
+    app.kubernetes.io/component: backend
+spec:
+  selector:
+    app.kubernetes.io/name: vacancy-scout-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
