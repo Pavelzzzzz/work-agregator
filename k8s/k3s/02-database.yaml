@@ -1,0 +1,106 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vacancy-db-pvc
+  namespace: vacancy-scout
+  labels:
+    app.kubernetes.io/part-of: vacancy-scout
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: local-path
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vacancy-scout-db
+  namespace: vacancy-scout
+  labels:
+    app.kubernetes.io/part-of: vacancy-scout
+    app.kubernetes.io/component: database
+spec:
+  serviceName: vacancy-scout-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vacancy-scout-db
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vacancy-scout-db
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-password
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: vacancy-secrets
+                  key: db-name
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - vacancy_scout
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - vacancy_scout
+            initialDelaySeconds: 10
+            periodSeconds: 5
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: vacancy-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vacancy-scout-db
+  namespace: vacancy-scout
+  labels:
+    app.kubernetes.io/part-of: vacancy-scout
+    app.kubernetes.io/component: database
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: vacancy-scout-db
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres

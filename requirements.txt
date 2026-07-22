@@ -1,0 +1,5 @@
+# Зависимости для work-agregator
+# Если проект использует FastAPI или Flask, здесь будут перечислены пакеты
+fastapi
+uvicorn[standard]
+pydantic

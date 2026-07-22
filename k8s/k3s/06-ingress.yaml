@@ -1,0 +1,29 @@
+# Для k3s используем встроенный Traefik Ingress Controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vacancy-scout-ingress
+  namespace: vacancy-scout
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: vacancy-scout-redirecthttps@kubernetescrd
+spec:
+  rules:
+    - host: vacancy.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: vacancy-scout-backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vacancy-scout-frontend
+                port:
+                  number: 80
