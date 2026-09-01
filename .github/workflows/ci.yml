@@ -84,7 +84,17 @@ jobs:
           POSTGRES_USER: vacancy_scout
           POSTGRES_PASSWORD: vacancy_scout
           POSTGRES_DB: vacancy_scout
-        run: ./gradlew :backend:liquibaseValidate -PliquibaseUrl=jdbc:postgresql://localhost:5432/vacancy_scout -PliquibaseUser=vacancy_scout -PliquibasePassword=vacancy_scout
+        run: |
+          # Wait for PostgreSQL to be ready
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U vacancy_scout; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          ./gradlew :backend:liquibaseValidate -PliquibaseUrl=jdbc:postgresql://localhost:5432/vacancy_scout -PliquibaseUser=vacancy_scout -PliquibasePassword=vacancy_scout
       
       - name: Generate Jacoco report
         run: ./gradlew :backend:jacocoTestReport
