@@ -74,9 +74,9 @@ liquibase {
     activities.register("main") {
         arguments = mapOf(
             "changeLogFile" to "src/main/resources/db/changelog/db.changelog-master.xml",
-            "url" to "jdbc:postgresql://localhost:5432/vacancy_scout",
-            "username" to "vacancy_scout",
-            "password" to "vacancy_scout"
+            "url" to providers.gradleProperty("liquibaseUrl").orElse("jdbc:postgresql://localhost:5432/vacancy_scout"),
+            "username" to providers.gradleProperty("liquibaseUser").orElse("vacancy_scout"),
+            "password" to providers.gradleProperty("liquibasePassword").orElse("vacancy_scout")
         )
     }
 }
