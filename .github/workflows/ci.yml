@@ -77,5 +77,54 @@ jobs:
       - name: Run tests (backend)
         run: ./gradlew :backend:test
       
+      - name: Liquibase migrations (validate changelogs)
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: vacancy_scout
+          POSTGRES_PASSWORD: vacancy_scout
+          POSTGRES_DB: vacancy_scout
+        run: |
+          # Wait for PostgreSQL to be ready (using bash TCP connection)
+          for i in {1..30}; do
+            if (echo > /dev/tcp/localhost/5432) >/dev/null 2>&1; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          # Run Liquibase validate using the liquibase jar from gradle cache with absolute path
+          LIQUIBASE_JAR=$(find ~/.gradle/caches -name "liquibase-core-4.27.0.jar" | head -1)
+          if [ -z "$LIQUIBASE_JAR" ]; then
+            echo "Liquibase 4.27.0 jar not found in gradle cache, trying any version..."
+            LIQUIBASE_JAR=$(find ~/.gradle/caches -name "liquibase-core-*.jar" | head -1)
+          fi
+          if [ -z "$LIQUIBASE_JAR" ]; then
+            echo "ERROR: Liquibase jar not found in gradle cache"
+            exit 1
+          fi
+          PG_JAR=$(find ~/.gradle/caches -name "postgresql-*.jar" | grep -v sources | head -1)
+          if [ -z "$PG_JAR" ]; then
+            echo "ERROR: PostgreSQL driver jar not found in gradle cache"
+            exit 1
+          fi
+          PICOCli_JAR=$(find ~/.gradle/caches -name "picocli-*.jar" | head -1)
+          if [ -z "$PICOCli_JAR" ]; then
+            echo "ERROR: Picocli jar not found in gradle cache"
+            exit 1
+          fi
+          CHANGelog_PATH=$(pwd)/backend/src/main/resources/db/changelog/db.changelog-master.xml
+          echo "Running Liquibase validate..."
+          echo "  Changelog: $CHANGelog_PATH"
+          echo "  Liquibase jar: $LIQUIBASE_JAR"
+          java -cp "$LIQUIBASE_JAR:$PG_JAR:$PICOCli_JAR" \
+            liquibase.Liquibase \
+            --changelog-file="$CHANGelog_PATH" \
+            --url=jdbc:postgresql://localhost:5432/vacancy_scout \
+            --username=vacancy_scout \
+            --password=vacancy_scout \
+            validate
+      
       - name: Generate Jacoco report
         run: ./gradlew :backend:jacocoTestReport
