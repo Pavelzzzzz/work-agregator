@@ -94,7 +94,12 @@ jobs:
             echo "Waiting for PostgreSQL... ($i/30)"
             sleep 2
           done
-          ./gradlew :backend:validate -PliquibaseUrl=jdbc:postgresql://localhost:5432/vacancy_scout -PliquibaseUser=vacancy_scout -PliquibasePassword=vacancy_scout
+          # Download and run Liquibase CLI to validate changelogs
+          curl -sLO https://github.com/liquibase/liquibase/releases/download/v4.27.0/liquibase-4.27.0.tar.gz
+          tar xzf liquibase-4.27.0.tar.gz
+          ./liquibase-4.27.0/liquibase --changelog-file=backend/src/main/resources/db/changelog/db.changelog-master.xml \
+            --url=jdbc:postgresql://localhost:5432/vacancy_scout \
+            --username=vacancy_scout --password=vacancy_scout validate
       
       - name: Generate Jacoco report
         run: ./gradlew :backend:jacocoTestReport

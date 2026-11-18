@@ -78,7 +78,7 @@ dependencies {
 liquibase {
     activities.register("main") {
         arguments = mapOf(
-            "changeLogFile" to "${projectDir}/src/main/resources/db/changelog/db.changelog-master.xml",
+            "changeLogFile" to "src/main/resources/db/changelog/db.changelog-master.xml",
             "url" to (findProperty("liquibaseUrl") ?: "jdbc:postgresql://localhost:5432/vacancy_scout").toString(),
             "username" to (findProperty("liquibaseUser") ?: "vacancy_scout").toString(),
             "password" to (findProperty("liquibasePassword") ?: "vacancy_scout").toString(),
