@@ -58,6 +58,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    // Liquibase runtime for the liquibase gradle plugin tasks (validate/update/…)
+    liquibaseRuntime("org.liquibase:liquibase-core")          // version via Spring Boot BOM (4.27.0)
+    liquibaseRuntime("org.postgresql:postgresql")             // version via Spring Boot BOM
+    liquibaseRuntime("info.picocli:picocli:4.7.7")            // required for Liquibase 4.4+ CLI parser
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
@@ -74,9 +79,10 @@ liquibase {
     activities.register("main") {
         arguments = mapOf(
             "changeLogFile" to "src/main/resources/db/changelog/db.changelog-master.xml",
-            "url" to providers.gradleProperty("liquibaseUrl").orElse("jdbc:postgresql://localhost:5432/vacancy_scout"),
-            "username" to providers.gradleProperty("liquibaseUser").orElse("vacancy_scout"),
-            "password" to providers.gradleProperty("liquibasePassword").orElse("vacancy_scout")
+            "url" to (findProperty("liquibaseUrl") ?: "jdbc:postgresql://localhost:5432/vacancy_scout").toString(),
+            "username" to (findProperty("liquibaseUser") ?: "vacancy_scout").toString(),
+            "password" to (findProperty("liquibasePassword") ?: "vacancy_scout").toString(),
+            "driver" to "org.postgresql.Driver"
         )
     }
 }

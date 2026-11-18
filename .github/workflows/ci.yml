@@ -94,7 +94,7 @@ jobs:
             echo "Waiting for PostgreSQL... ($i/30)"
             sleep 2
           done
-          ./gradlew :backend:liquibaseValidate -PliquibaseUrl=jdbc:postgresql://localhost:5432/vacancy_scout -PliquibaseUser=vacancy_scout -PliquibasePassword=vacancy_scout
+          ./gradlew :backend:validate -PliquibaseUrl=jdbc:postgresql://localhost:5432/vacancy_scout -PliquibaseUser=vacancy_scout -PliquibasePassword=vacancy_scout
       
       - name: Generate Jacoco report
         run: ./gradlew :backend:jacocoTestReport
