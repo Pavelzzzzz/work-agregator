@@ -91,7 +91,7 @@ liquibase {
 tasks.register<JavaExec>("validateChangelogs") {
     group = "liquibase"
     description = "Validate Liquibase changelog files"
-    classpath = configurations.liquibaseRuntime
+    classpath = configurations.getByName("liquibaseRuntime").get()
     mainClass.set("liquibase.integration.commandline.Main")
     args("--changelog-file", "src/main/resources/db/changelog/db.changelog-master.xml")
     args("--url", findProperty("liquibaseUrl") ?: "jdbc:postgresql://localhost:5432/vacancy_scout")
