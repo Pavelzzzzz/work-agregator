@@ -87,6 +87,19 @@ liquibase {
     }
 }
 
+// Custom task to validate Liquibase changelogs
+tasks.register<JavaExec>("validateChangelogs") {
+    group = "liquibase"
+    description = "Validate Liquibase changelog files"
+    classpath = configurations.getByName("liquibaseRuntime")
+    mainClass.set("liquibase.integration.commandline.Main")
+    args("--changeLogFile", "src/main/resources/db/changelog/db.changelog-master.xml")
+    args("--url", findProperty("liquibaseUrl") ?: "jdbc:postgresql://localhost:5432/vacancy_scout")
+    args("--username", findProperty("liquibaseUser") ?: "vacancy_scout")
+    args("--password", findProperty("liquibasePassword") ?: "vacancy_scout")
+    args("validate")
+}
+
 // Jacoco for test coverage
 tasks.test {
     useJUnitPlatform {

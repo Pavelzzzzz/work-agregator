@@ -77,5 +77,24 @@ jobs:
       - name: Run tests (backend)
         run: ./gradlew :backend:test
       
+      - name: Liquibase migrations (validate changelogs)
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: vacancy_scout
+          POSTGRES_PASSWORD: vacancy_scout
+          POSTGRES_DB: vacancy_scout
+        run: |
+          # Wait for PostgreSQL to be ready (using bash TCP connection)
+          for i in {1..30}; do
+            if (echo > /dev/tcp/localhost/5432) >/dev/null 2>&1; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+          ./gradlew :backend:validateChangelogs -PliquibaseUrl=jdbc:postgresql://localhost:5432/vacancy_scout -PliquibaseUser=vacancy_scout -PliquibasePassword=vacancy_scout
+      
       - name: Generate Jacoco report
         run: ./gradlew :backend:jacocoTestReport
