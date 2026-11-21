@@ -36,24 +36,23 @@ public class CompanyService {
         .findById(id)
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Company not found: " + id)))
         .then(
-            Mono.defer(
-                () -> {
-                  Company updated =
-                      Company.builder()
-                          .id(id)
-                          .name(company.getName())
-                          .careersUrl(company.getCareersUrl())
-                          .websiteUrl(company.getWebsiteUrl())
-                          .description(company.getDescription())
-                          .isActive(company.isActive())
-                          .lastScanAt(company.getLastScanAt())
-                          .scanStatus(company.getScanStatus())
-                          .scanError(company.getScanError())
-                          .createdAt(company.getCreatedAt())
-                          .updatedAt(company.getUpdatedAt())
-                          .build();
-                  return companyRepository.save(updated);
-                }));
+            Mono.defer(() -> {
+              Company updated =
+                  Company.builder()
+                      .id(id)
+                      .name(company.getName())
+                      .careersUrl(company.getCareersUrl())
+                      .websiteUrl(company.getWebsiteUrl())
+                      .description(company.getDescription())
+                      .isActive(company.isActive())
+                      .lastScanAt(company.getLastScanAt())
+                      .scanStatus(company.getScanStatus())
+                      .scanError(company.getScanError())
+                      .createdAt(company.getCreatedAt())
+                      .updatedAt(company.getUpdatedAt())
+                      .build();
+              return companyRepository.save(updated);
+            }));
   }
 
   public Mono<Void> delete(UUID id) {

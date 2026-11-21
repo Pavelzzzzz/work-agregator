@@ -8,9 +8,6 @@
 
     <rule ref="category/java/bestpractices.xml">
         <exclude name="GuardLogStatement"/>
-        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-        <exclude name="JUnitTestsShouldIncludeAssert"/>
         <exclude name="JUnit5TestShouldBePackagePrivate"/>
         <exclude name="AvoidReassigningParameters"/>
         <exclude name="AccessorMethodGeneration"/>
@@ -27,6 +24,7 @@
         <exclude name="AssignmentInOperand"/>
         <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="MissingSerialVersionUID"/>
+        <exclude name="AvoidCatchingGenericException"/>
     </rule>
 
     <rule ref="category/java/performance.xml">
@@ -72,7 +70,6 @@
         <exclude name="LoosePackageCoupling"/>
         <exclude name="DataClass"/>
         <exclude name="GodClass"/>
-        <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidThrowingRawExceptionTypes"/>
         <exclude name="SignatureDeclareThrowsException"/>
         <exclude name="UseUtilityClass"/>

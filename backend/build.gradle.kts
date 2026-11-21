@@ -1,10 +1,19 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.liquibase:liquibase-core:5.0.4")
+    }
+}
+
 plugins {
     java
-    id("org.springframework.boot") version "3.3.0"
-    id("io.spring.dependency-management") version "1.1.5"
-    id("org.liquibase.gradle") version "2.2.2"
+    id("org.springframework.boot") version "4.2.0"
+    id("io.spring.dependency-management") version "1.1.7"
+    id("org.liquibase.gradle") version "3.1.1"
     id("jacoco")
-    id("com.diffplug.spotless") version "6.25.0"
+    id("com.diffplug.spotless") version "8.11.0"
     checkstyle
     pmd
 }
@@ -19,62 +28,46 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = uri("https://repo.spring.io/milestone") }
-}
-
-configurations.all {
-    resolutionStrategy {
-        eachDependency {
-            if (requested.group == "org.testcontainers") {
-                useVersion("1.20.6")
-            }
-        }
-    }
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:1.0.0-M2")
-    }
 }
 
 dependencies {
     // Web
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     // Reactive DB
+    implementation("org.springframework.boot:spring-boot-starter-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.postgresql:r2dbc-postgresql")
     runtimeOnly("org.postgresql:postgresql")
     // Liquibase
-    implementation("org.liquibase:liquibase-core")
+    implementation("org.springframework.boot:spring-boot-starter-liquibase")
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-    // AI (LM Studio on localhost)
-    implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
     // PDF / DOCX
-    implementation("org.apache.pdfbox:pdfbox:3.0.1") {
+    implementation("org.apache.pdfbox:pdfbox:3.0.8") {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation("org.apache.poi:poi-ooxml:5.2.5")
+    implementation("org.apache.poi:poi-ooxml:6.0.0")
     // Validation / Actuator
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // Liquibase runtime for the liquibase gradle plugin tasks (validate/update/…)
-    liquibaseRuntime("org.liquibase:liquibase-core")          // version via Spring Boot BOM (4.27.0)
-    liquibaseRuntime("org.postgresql:postgresql")             // version via Spring Boot BOM
-    liquibaseRuntime("info.picocli:picocli:4.7.7")            // required for Liquibase 4.4+ CLI parser
+    liquibaseRuntime("org.liquibase:liquibase-core")
+    liquibaseRuntime("org.postgresql:postgresql")
+    liquibaseRuntime("info.picocli:picocli:4.7.7") // required for Liquibase 4.4+ CLI parser
 
     // Testing
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-jackson-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-r2dbc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-r2dbc-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-liquibase-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("org.testcontainers:testcontainers-r2dbc")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("io.projectreactor:reactor-test")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:r2dbc")
-    testImplementation("org.testcontainers:postgresql")
-    testImplementation("org.wiremock:wiremock:3.3.1")
-    testImplementation("org.mockito:mockito-core:5.11.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
-    testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("org.wiremock:wiremock:3.13.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -142,7 +135,7 @@ spotless {
 
 // Checkstyle — style checks
 checkstyle {
-    toolVersion = "10.17.0"
+    toolVersion = "14.4.0"
     configFile = file("config/checkstyle/checkstyle.xml")
     isIgnoreFailures = false
     maxErrors = 0
@@ -154,7 +147,7 @@ tasks.named("checkstyleMain") {
 
 // PMD — static analysis
 pmd {
-    toolVersion = "7.1.0"
+    toolVersion = "7.24.0"
     rulesMinimumPriority = 5
     ruleSetFiles = files(file("config/pmd/ruleset.xml"))
     isIgnoreFailures = false

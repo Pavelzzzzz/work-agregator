@@ -13,7 +13,7 @@
           <h1 class="text-2xl font-bold text-gray-900">{{ c.name }}</h1>
           <p v-if="c.description" class="text-gray-500 mt-1">{{ c.description }}</p>
         </div>
-        <StatusBadge :variant="c.isActive ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
+        <StatusBadge :variant="c.active ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
       </div>
 
       <div class="mt-6 space-y-2 text-sm">

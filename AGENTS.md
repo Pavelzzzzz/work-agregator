@@ -1,6 +1,6 @@
 # VacancyScout
 
-Стек: Java 21, Spring Boot 3.3 WebFlux, R2DBC PostgreSQL 16, Redis,
+Стек: Java 21, Spring Boot 4.2 WebFlux, R2DBC PostgreSQL 16, Redis,
 Liquibase; Vue 3 + TypeScript + Vite + Pinia + Tailwind.
 CI: GitHub Actions. Деплой: Docker Compose (dev), Kubernetes (prod).
 
@@ -8,6 +8,7 @@ CI: GitHub Actions. Деплой: Docker Compose (dev), Kubernetes (prod).
 - ./gradlew :backend:test
 - ./gradlew :backend:integrationTest   # Testcontainers
 - npm --prefix frontend test
+- npm --prefix frontend run typecheck
 - npm --prefix frontend run lint
 - npm --prefix frontend run build
 

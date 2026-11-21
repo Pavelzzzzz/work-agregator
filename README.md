@@ -6,15 +6,15 @@
 
 | Компонент | Технология |
 |-----------|-----------|
-| Backend | Java 21, Spring Boot 3.3+, WebFlux (Netty) |
+| Backend | Java 21, Spring Boot 4.2, WebFlux (Netty) |
 | Database | PostgreSQL 16 + R2DBC (reactive) |
 | Migrations | Liquibase |
 | Cache | Redis (reactive) |
 | AI | LM Studio (Qwen) — локальная LLM |
-| Frontend | Vue 3 + TypeScript + Vite + Pinia + Tailwind |
+| Frontend | Vue 3.5 + TypeScript 5.9 + Vite 8 + Pinia 4 + Tailwind 4 |
 | CI/CD | GitHub Actions |
 | Deploy | Docker Compose (dev), Kubernetes (prod) |
-| Testing | JUnit 5, Mockito, Testcontainers, WireMock, Jacoco |
+| Testing | JUnit 5, Mockito, Testcontainers 2, WireMock, Jacoco |
 
 ## Быстрый старт
 
@@ -146,9 +146,8 @@ curl -N -H "Accept: text/event-stream" \
 `.github/workflows/ci.yml` включает:
 - Сборка backend (Gradle) и frontend (npm)
 - Юнит-тесты с Jacoco coverage report
-- Интеграционные тесты
+- Typecheck, линтеры и сборка frontend
 - Валидация Liquibase changelog
-- Сборка Docker образов
 
 ## Деплой
 
@@ -171,10 +170,14 @@ kubectl apply -f k8s/prod/
 ## Тестирование
 
 ```bash
-cd backend
-./gradlew test                    # Юнит-тесты
-./gradlew jacocoTestReport        # Coverage report
-./gradlew liquibaseValidate       # Проверка миграций
+./gradlew :backend:test            # Юнит-тесты
+./gradlew :backend:integrationTest # Интеграционные тесты (Testcontainers, нужен Docker)
+./gradlew :backend:jacocoTestReport # Coverage report
+./gradlew :backend:validateChangelogs # Проверка миграций (нужен запущенный PostgreSQL)
+
+npm --prefix frontend test         # Фронтенд-тесты
+npm --prefix frontend run typecheck
+npm --prefix frontend run lint
 ```
 
 ## Ingestion (Rabota.by)

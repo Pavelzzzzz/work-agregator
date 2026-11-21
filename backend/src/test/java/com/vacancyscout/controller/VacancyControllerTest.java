@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 public class VacancyControllerTest {
   @Autowired private WebTestClient webTestClient;
 
-  @MockBean private VacancySearchService searchService;
+  @MockitoBean private VacancySearchService searchService;
 
   @Test
   void search_withoutResults_returnsEmptyResponse() {
@@ -67,23 +67,22 @@ public class VacancyControllerTest {
 
     webTestClient
         .get()
-        .uri(
-            uriBuilder ->
-                uriBuilder
-                    .path("/api/vacancies/search")
-                    .queryParam("q", "developer")
-                    .queryParam("language", "en")
-                    .queryParam("source", "rabota.by")
-                    .queryParam("employmentType", "FULL_TIME")
-                    .queryParam("minSalary", "1000")
-                    .queryParam("maxSalary", "5000")
-                    .queryParam("skills", "Java", "Spring")
-                    .queryParam("companyName", "Google")
-                    .queryParam("location", "Minsk")
-                    .queryParam("remoteOnly", "true")
-                    .queryParam("page", "2")
-                    .queryParam("pageSize", "10")
-                    .build())
+        .uri(uriBuilder ->
+            uriBuilder
+                .path("/api/vacancies/search")
+                .queryParam("q", "developer")
+                .queryParam("language", "en")
+                .queryParam("source", "rabota.by")
+                .queryParam("employmentType", "FULL_TIME")
+                .queryParam("minSalary", "1000")
+                .queryParam("maxSalary", "5000")
+                .queryParam("skills", "Java", "Spring")
+                .queryParam("companyName", "Google")
+                .queryParam("location", "Minsk")
+                .queryParam("remoteOnly", "true")
+                .queryParam("page", "2")
+                .queryParam("pageSize", "10")
+                .build())
         .exchange()
         .expectStatus()
         .isOk();

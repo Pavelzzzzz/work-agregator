@@ -1,8 +1,5 @@
 package com.vacancyscout.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.postgresql.codec.Json;
 import java.util.Collections;
 import java.util.List;
@@ -13,6 +10,9 @@ import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
 import org.springframework.data.r2dbc.dialect.PostgresDialect;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 public class R2dbcConfig {
@@ -39,7 +39,7 @@ public class R2dbcConfig {
     public Json convert(List<String> source) {
       try {
         return Json.of(objectMapper.writeValueAsString(source));
-      } catch (JsonProcessingException e) {
+      } catch (JacksonException e) {
         throw new RuntimeException("Failed to serialize skills", e);
       }
     }

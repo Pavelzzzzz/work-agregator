@@ -37,11 +37,10 @@ public class VacancyUpdateStreamTest {
     Flux<VacancyUpdateEvent> flux = stream.stream().take(2);
 
     StepVerifier.create(flux)
-        .then(
-            () -> {
-              stream.publish(e1);
-              stream.publish(e2);
-            })
+        .then(() -> {
+          stream.publish(e1);
+          stream.publish(e2);
+        })
         .expectNext(e1)
         .expectNext(e2)
         .expectComplete()

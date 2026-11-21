@@ -42,12 +42,11 @@ public class RabotaByRssSource {
   public Flux<RssItem> fetch(String query) {
     return webClient
         .get()
-        .uri(
-            uri ->
-                uri.path("/search/vacancy/rss")
-                    .queryParam("area", area)
-                    .queryParam("text", query)
-                    .build())
+        .uri(uri ->
+            uri.path("/search/vacancy/rss")
+                .queryParam("area", area)
+                .queryParam("text", query)
+                .build())
         .retrieve()
         .bodyToMono(String.class)
         .flatMapMany(xml -> Flux.fromIterable(parseRss(xml)))

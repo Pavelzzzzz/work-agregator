@@ -4,7 +4,7 @@ export interface Company {
   careersUrl: string;
   websiteUrl: string;
   description: string;
-  isActive: boolean;
+  active: boolean;
   lastScanAt: string | null;
   scanStatus: string;
   scanError: string | null;

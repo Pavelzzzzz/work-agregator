@@ -10,9 +10,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 public class CompanyControllerTest {
   @Autowired private WebTestClient webTestClient;
 
-  @MockBean private CompanyService companyService;
+  @MockitoBean private CompanyService companyService;
 
   @Test
   void list_shouldReturnOk() {

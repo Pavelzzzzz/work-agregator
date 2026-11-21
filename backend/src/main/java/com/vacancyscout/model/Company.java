@@ -1,6 +1,7 @@
 package com.vacancyscout.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -32,7 +33,7 @@ public class Company implements Persistable<UUID> {
       String careersUrl,
       String websiteUrl,
       String description,
-      boolean isActive,
+      @JsonProperty("active") boolean isActive,
       LocalDateTime lastScanAt,
       String scanStatus,
       String scanError,

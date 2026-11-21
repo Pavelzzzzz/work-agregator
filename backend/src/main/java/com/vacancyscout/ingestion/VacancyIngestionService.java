@@ -75,13 +75,12 @@ public class VacancyIngestionService {
   private Mono<Void> processItem(RabotaByRssSource.RssItem item) {
     return vacancyRepository
         .existsBySourceNameAndSourceId(SOURCE_NAME, item.vacancyId())
-        .flatMap(
-            exists -> {
-              if (exists) {
-                return Mono.empty();
-              }
-              return fetchAndSave(item);
-            });
+        .flatMap(exists -> {
+          if (exists) {
+            return Mono.empty();
+          }
+          return fetchAndSave(item);
+        });
   }
 
   private Mono<Void> fetchAndSave(RabotaByRssSource.RssItem item) {
@@ -100,13 +99,12 @@ public class VacancyIngestionService {
                 null,
                 null,
                 List.of()))
-        .flatMap(
-            detail -> {
-              var vacancy = mapToVacancy(item, detail);
-              return ensureCompany(vacancy.companyName())
-                  .then(vacancyRepository.insertVacancy(vacancy))
-                  .then(notify(vacancy));
-            })
+        .flatMap(detail -> {
+          var vacancy = mapToVacancy(item, detail);
+          return ensureCompany(vacancy.companyName())
+              .then(vacancyRepository.insertVacancy(vacancy))
+              .then(notify(vacancy));
+        })
         .doOnError(e -> LOG.error("Failed to save vacancy: {}", item.link(), e))
         .onErrorResume(e -> Mono.empty());
   }
@@ -127,12 +125,11 @@ public class VacancyIngestionService {
     return companyRepository
         .save(company)
         .then()
-        .onErrorResume(
-            e -> {
-              // Unique constraint violation — company was just created by another concurrent
-              // request
-              return Mono.empty();
-            });
+        .onErrorResume(e -> {
+          // Unique constraint violation — company was just created by another concurrent
+          // request
+          return Mono.empty();
+        });
   }
 
   private Vacancy mapToVacancy(

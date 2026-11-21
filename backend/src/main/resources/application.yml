@@ -1,6 +1,4 @@
 spring:
-  autoconfigure:
-    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
   application:
     name: vacancy-scout
   r2dbc:

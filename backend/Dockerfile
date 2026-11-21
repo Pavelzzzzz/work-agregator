@@ -1,11 +1,12 @@
-FROM gradle:8.5-jdk21 AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /workspace
 COPY settings.gradle.kts ./
-COPY backend/build.gradle.kts backend/
+COPY gradlew ./
 COPY gradle ./gradle
+COPY backend/build.gradle.kts backend/
 COPY backend/src backend/src
 RUN mkdir -p frontend && touch frontend/build.gradle.kts && \
-    gradle :backend:bootJar --no-daemon
+    ./gradlew :backend:bootJar --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

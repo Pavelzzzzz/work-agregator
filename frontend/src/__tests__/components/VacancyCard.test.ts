@@ -3,6 +3,7 @@ import { mount } from "@vue/test-utils";
 import VacancyCard from "@/components/vacancies/VacancyCard.vue";
 
 const defaultProps = {
+  id: "vacancy-1",
   title: "Frontend Developer",
   companyName: "Acme Corp",
   salaryMin: null,

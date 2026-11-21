@@ -55,7 +55,7 @@ kubectl get ingress -n vacancy-scout
 | `00-namespace.yaml` | Namespace `vacancy-scout` |
 | `01-secrets.yaml` | Секреты: DB, Redis, R2DBC URL |
 | `02-database.yaml` | PostgreSQL 16 (StatefulSet + PVC 10Gi) |
-| `03-redis.yaml` | Redis 7 (Deployment x1) |
+| `03-redis.yaml` | Redis 8 (Deployment x1) |
 | `04-backend.yaml` | Backend Spring Boot (Deployment x2) |
 | `05-frontend.yaml` | Frontend Nginx (Deployment x2) |
 | `06-ingress.yaml` | Traefik Ingress (vacancy.local) |

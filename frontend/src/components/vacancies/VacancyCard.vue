@@ -44,11 +44,11 @@ const props = defineProps<{
 
 const salary = computed(() => {
   const { salaryMin, salaryMax, salaryCurrency } = props;
-  if (salaryMin === null && salaryMax === null) return null;
+  if (salaryMin == null && salaryMax == null) return null;
   const fmt = (v: number) => v.toLocaleString();
   const cur = salaryCurrency || "";
-  if (salaryMin !== null && salaryMax !== null) return `${fmt(salaryMin)}–${fmt(salaryMax)} ${cur}`;
-  if (salaryMin !== null) return `from ${fmt(salaryMin)} ${cur}`;
+  if (salaryMin != null && salaryMax != null) return `${fmt(salaryMin)}–${fmt(salaryMax)} ${cur}`;
+  if (salaryMin != null) return `from ${fmt(salaryMin)} ${cur}`;
   return `up to ${fmt(salaryMax!)} ${cur}`;
 });
 </script>
