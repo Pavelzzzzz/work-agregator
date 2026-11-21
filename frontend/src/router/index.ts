@@ -10,7 +10,7 @@ const routes = [
   { path: "/vacancies", name: "vacancies", component: VacancyList },
   { path: "/vacancies/:id", name: "vacancy-detail", component: VacancyDetail },
   { path: "/companies", name: "companies", component: CompanyList },
-  { path: "/companies/:id", name: "company-detail", component: CompanyDetail },
+  { path: "/companies/:name", name: "company-detail", component: CompanyDetail },
 ];
 
 const router = createRouter({ history: createWebHistory(), routes });

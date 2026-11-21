@@ -34,6 +34,7 @@ public class RabotaByRssSource {
     this.area = area;
     this.webClient =
         WebClient.builder()
+            .exchangeStrategies(IngestionWebClientSupport.exchangeStrategies())
             .baseUrl(rssBaseUrl)
             .defaultHeader("User-Agent", "VacancyScout/1.0")
             .build();

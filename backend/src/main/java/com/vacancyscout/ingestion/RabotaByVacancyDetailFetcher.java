@@ -24,7 +24,11 @@ public class RabotaByVacancyDetailFetcher {
 
   public RabotaByVacancyDetailFetcher(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
-    this.webClient = WebClient.builder().defaultHeader("User-Agent", "VacancyScout/1.0").build();
+    this.webClient =
+        WebClient.builder()
+            .exchangeStrategies(IngestionWebClientSupport.exchangeStrategies())
+            .defaultHeader("User-Agent", "VacancyScout/1.0")
+            .build();
   }
 
   public Mono<VacancyDetail> fetch(String url) {
