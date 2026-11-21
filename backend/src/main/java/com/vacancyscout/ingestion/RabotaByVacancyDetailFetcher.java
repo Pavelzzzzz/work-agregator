@@ -33,15 +33,38 @@ public class RabotaByVacancyDetailFetcher {
   }
 
   public Mono<VacancyDetail> fetch(String url) {
+    return fetchWithStatus(url).mapNotNull(DetailFetchResult::detail);
+  }
+
+  /**
+   * Fetches a vacancy page and reports whether the source says the vacancy is gone (HTTP 404/410)
+   * or the attempt simply failed. Used by the periodic refresh to distinguish a deleted vacancy
+   * from a transient network/HTTP error.
+   */
+  public Mono<DetailFetchResult> fetchWithStatus(String url) {
     return webClient
         .get()
         .uri(url)
-        .retrieve()
-        .bodyToMono(String.class)
-        .map(this::parseHtml)
-        .doOnError(e -> LOG.error("Failed to fetch vacancy detail: {}", url, e))
-        .onErrorResume(e -> Mono.empty());
+        .exchangeToMono(response -> {
+          int code = response.statusCode().value();
+          if (code == 404 || code == 410) {
+            return response.releaseBody().thenReturn(new DetailFetchResult(null, true));
+          }
+          if (!response.statusCode().is2xxSuccessful()) {
+            return response.releaseBody().thenReturn(new DetailFetchResult(null, false));
+          }
+          return response
+              .bodyToMono(String.class)
+              .map(html -> new DetailFetchResult(parseHtml(html), false))
+              .defaultIfEmpty(new DetailFetchResult(null, false));
+        })
+        .onErrorResume(e -> {
+          LOG.error("Failed to fetch vacancy detail: {}", url, e);
+          return Mono.just(new DetailFetchResult(null, false));
+        });
   }
+
+  public record DetailFetchResult(VacancyDetail detail, boolean gone) {}
 
   VacancyDetail parseHtml(String html) {
     var m = JSON_LD_PATTERN.matcher(html);

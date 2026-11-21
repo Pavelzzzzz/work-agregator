@@ -3,12 +3,14 @@ package com.vacancyscout.repository;
 import com.vacancyscout.dto.SearchFilters;
 import com.vacancyscout.model.Vacancy;
 import com.vacancyscout.model.VacancyTranslation;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.Query;
+import org.springframework.data.relational.core.query.Update;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -81,6 +83,53 @@ public class VacancyRepositoryImpl implements VacancyRepositoryCustom {
             .updatedAt(vacancy.updatedAt())
             .build();
     return entityTemplate.insert(Vacancy.class).using(enriched).then(insertTranslationFor(vacancy));
+  }
+
+  @Override
+  public Flux<Vacancy> findForRefresh(LocalDateTime cutoff, int limit) {
+    var query =
+        Query.query(
+                Criteria.where("isActive")
+                    .is(true)
+                    .and(Criteria.where("url").isNotNull())
+                    .and(Criteria.where("updatedAt").lessThan(cutoff)))
+            .sort(Sort.by("updatedAt").ascending())
+            .limit(limit);
+    return entityTemplate.select(Vacancy.class).matching(query).all();
+  }
+
+  @Override
+  public Mono<Boolean> updateDetails(Vacancy vacancy) {
+    var update =
+        Update.update("title", vacancy.title())
+            .set("companyName", vacancy.companyName())
+            .set("description", vacancy.description())
+            .set("requirements", vacancy.requirements())
+            .set("responsibilities", vacancy.responsibilities())
+            .set("skills", vacancy.skills())
+            .set("location", vacancy.location())
+            .set("searchText", buildSearchText(vacancy))
+            .set("isActive", true)
+            .set("updatedAt", LocalDateTime.now());
+    return updateById(vacancy.id(), update);
+  }
+
+  @Override
+  public Mono<Boolean> markChecked(UUID id) {
+    return updateById(id, Update.update("updatedAt", LocalDateTime.now()));
+  }
+
+  @Override
+  public Mono<Boolean> deactivate(UUID id) {
+    return updateById(id, Update.update("isActive", false).set("updatedAt", LocalDateTime.now()));
+  }
+
+  private Mono<Boolean> updateById(UUID id, Update update) {
+    return entityTemplate
+        .update(Vacancy.class)
+        .matching(Query.query(Criteria.where("id").is(id)))
+        .apply(update)
+        .map(rows -> rows > 0);
   }
 
   private Mono<Void> insertTranslationFor(Vacancy vacancy) {

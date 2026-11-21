@@ -22,6 +22,16 @@ spring:
   main:
     web-application-type: reactive
 
+vacancy:
+  refresh:
+    enabled: true
+    interval-ms: 300000
+    initial-delay-ms: 30000
+    batch-size: 50
+    concurrency: 4
+    stale-after-ms: 3600000
+    timeout-ms: 10000
+
 company:
   scan:
     enabled: true
