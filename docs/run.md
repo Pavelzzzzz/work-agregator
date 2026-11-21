@@ -2,10 +2,10 @@
 
 ## Предварительные требования
 
-- Docker 24+ и Docker Compose v2
+- Docker 24+ и Docker Compose v2 (команда `docker compose`, не устаревшая `docker-compose`)
 - Java 21 (для локального запуска без Docker)
-- Node.js 20+ и npm (для фронтенда)
-- Gradle 8.5+ (или используйте `gradlew`)
+- Node.js 22+ и npm (для фронтенда)
+- Gradle 9.9.2 — используйте `./gradlew` из корня репозитория
 
 ## 1. Быстрый старт через Docker Compose
 
@@ -13,21 +13,21 @@
 
 ```bash
 # Запуск PostgreSQL и Redis
-docker-compose up -d db redis
+docker compose up -d db redis
 
 # Проверка
-docker-compose ps
+docker compose ps
 ```
 
 ### 1.2 Запуск приложения
 
 ```bash
 # Сборка и запуск backend + frontend
-docker-compose up -d backend frontend
+docker compose up -d backend frontend
 
 # Просмотр логов
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
 ### 1.3 Проверка работоспособности
@@ -47,6 +47,30 @@ curl -N -H "Accept: text/event-stream" \
 curl http://localhost:8080/actuator/health
 ```
 
+### 1.4 Обновление с PostgreSQL 15 на 16 (обязательно при старом томе)
+
+PostgreSQL не может открыть каталог данных другой мажорной версии. Если том
+`postgres_data` создавался под `postgres:15`, после смены образа на `postgres:16`
+контейнер `db` упадёт с `database files are incompatible with server`.
+**Не удаляйте том вручную** — сначала перенесите данные:
+
+```bash
+./scripts/migrate-postgres-15-to-16.sh
+```
+
+Скрипт:
+1. останавливает стек (тома сохраняются);
+2. делает физическую копию старого тома в `<project>_postgres_data_pg15_backup`;
+3. снимает `pg_dump` в `./backups/vacancy_scout-pg15-<timestamp>.sql`;
+4. создаёт новый том, поднимает `postgres:16` и восстанавливает дамп;
+5. поднимает весь стек и печатает пути к бэкапам и команды отката.
+
+Скрипт проверяет версию данных в томе и ничего не делает, если том уже
+отличается от 15.x. Переопределения: `PG_VOLUME`, `COMPOSE_PROJECT_NAME`,
+`POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_PASSWORD`, `BACKUP_DIR`, флаг `-y`.
+
+Если том создан сразу под 16 (чистая установка) — этот шаг не нужен.
+
 ## 2. Локальный запуск (без Docker)
 
 ### 2.1 PostgreSQL и Redis
@@ -57,11 +81,11 @@ docker run -d --name vacancy-db \
   -e POSTGRES_USER=vacancy_scout \
   -e POSTGRES_PASSWORD=vacancy_scout \
   -e POSTGRES_DB=vacancy_scout \
-  -p 5432:5432 postgres:15
+  -p 5432:5432 postgres:16
 
 # Redis
 docker run -d --name vacancy-redis \
-  -p 6379:6379 redis:7
+  -p 6379:6379 redis:8-alpine
 ```
 
 ### 2.2 Backend
@@ -97,10 +121,11 @@ npm run dev
 При необходимости можно запустить вручную:
 
 ```bash
-cd backend
-./gradlew liquibaseUpdate       # Применить миграции
-./gradlew liquibaseValidate     # Проверить changelog
-./gradlew liquibaseStatus       # Статус миграций
+# из корня репозитория
+./gradlew :backend:update              # Применить миграции
+./gradlew :backend:validate            # Проверить changelog
+./gradlew :backend:status              # Статус миграций
+./gradlew :backend:validateChangelogs  # Валидация файлов changelog
 ```
 
 ### Доступные миграции
@@ -316,8 +341,8 @@ kubectl get pods -n vacancy-prod
 
 ```bash
 # Проверка PostgreSQL
-docker-compose logs db
-docker exec -it vacancy-scout-db-1 psql -U vacancy_scout -d vacancy_scout
+docker compose logs db
+docker compose exec db psql -U vacancy_scout -d vacancy_scout
 ```
 
 ### Миграции не применяются
@@ -337,7 +362,7 @@ curl -N -H "Accept: text/event-stream" \
   'http://localhost:8080/api/vacancies/updates?since=2026-01-01T00:00:00'
 
 # Проверка логов backend
-docker-compose logs backend
+docker compose logs backend
 ```
 
 ### Frontend не подключается к API

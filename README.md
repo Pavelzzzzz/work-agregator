@@ -20,15 +20,21 @@
 
 ```bash
 # 1. Запуск зависимостей (PostgreSQL, Redis)
-docker-compose up -d db redis
+docker compose up -d db redis
 
 # 2. Запуск приложения
-docker-compose up -d backend frontend
+docker compose up -d backend frontend
 
 # 3. Проверка
 curl http://localhost:8080/api/companies
 curl http://localhost:8080/api/vacancies/search
 ```
+
+> **Обновление с PostgreSQL 15 → 16:** если у вас уже есть том `postgres_data`
+> от `postgres:15`, `docker compose up` упадёт с `database files are incompatible
+> with server`. До запуска выполните `./scripts/migrate-postgres-15-to-16.sh`
+> (дамп + физическая копия старого тома + восстановление). Подробности —
+> [docs/run.md](docs/run.md#14-обновление-с-postgresql-15-на-16-обязательно-при-старом-томе).
 
 ## Структура проекта
 
@@ -153,7 +159,7 @@ curl -N -H "Accept: text/event-stream" \
 
 ### Docker Compose (dev)
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Kubernetes (dev/prod)

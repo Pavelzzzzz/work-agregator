@@ -23,6 +23,9 @@ services:
     depends_on:
       - backend
   db:
+    # ВАЖНО: PostgreSQL 16 не может открыть data directory от 15.x.
+    # При обновлении существующего тома сначала выполните:
+    #   ./scripts/migrate-postgres-15-to-16.sh
     image: postgres:16
     environment:
       POSTGRES_USER: vacancy_scout

@@ -13,6 +13,7 @@ frontend/dist/
 
 .env
 *.log
+backups/
 
 k8s/dev/secret.yaml
 k8s/prod/secret.yaml
