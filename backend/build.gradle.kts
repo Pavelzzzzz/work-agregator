@@ -52,7 +52,9 @@ dependencies {
     // AI (LM Studio on localhost)
     implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
     // PDF / DOCX
-    implementation("org.apache.pdfbox:pdfbox:3.0.1")
+    implementation("org.apache.pdfbox:pdfbox:3.0.1") {
+        exclude(group = "commons-logging", module = "commons-logging")
+    }
     implementation("org.apache.poi:poi-ooxml:5.2.5")
     // Validation / Actuator
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -73,6 +75,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 liquibase {
@@ -111,6 +114,8 @@ tasks.register<Test>("integrationTest") {
     useJUnitPlatform {
         includeTags("integration")
     }
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
     shouldRunAfter(tasks.test)
     jvmArgs("-Dapi.version=1.40")
     environment("TESTCONTAINERS_RYUK_DISABLED", "true")
