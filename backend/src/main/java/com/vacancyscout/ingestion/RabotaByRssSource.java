@@ -1,5 +1,6 @@
 package com.vacancyscout.ingestion;
 
+import com.vacancyscout.config.WebClientSupport;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class RabotaByRssSource {
     this.area = area;
     this.webClient =
         WebClient.builder()
-            .exchangeStrategies(IngestionWebClientSupport.exchangeStrategies())
+            .exchangeStrategies(WebClientSupport.exchangeStrategies())
             .baseUrl(rssBaseUrl)
             .defaultHeader("User-Agent", "VacancyScout/1.0")
             .build();

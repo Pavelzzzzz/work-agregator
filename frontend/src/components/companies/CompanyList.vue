@@ -20,7 +20,7 @@
             <h3 class="font-semibold text-gray-900">{{ c.name }}</h3>
             <p class="text-sm text-gray-500 mt-1">{{ c.description }}</p>
           </div>
-          <StatusBadge :variant="c.active ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
+          <StatusBadge :variant="companyScanVariant(c.scanStatus)">{{ c.scanStatus }}</StatusBadge>
         </div>
         <div class="mt-4 text-sm">
           <a
@@ -48,6 +48,7 @@ import { onMounted } from "vue";
 import { useCompanyStore } from "@/stores/company";
 import Spinner from "@/components/common/Spinner.vue";
 import StatusBadge from "@/components/common/StatusBadge.vue";
+import { companyScanVariant } from "@/utils/company";
 
 const store = useCompanyStore();
 onMounted(() => store.fetchAll());

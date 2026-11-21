@@ -1,5 +1,6 @@
 package com.vacancyscout.ingestion;
 
+import com.vacancyscout.config.WebClientSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -26,7 +27,7 @@ public class RabotaByVacancyDetailFetcher {
     this.objectMapper = objectMapper;
     this.webClient =
         WebClient.builder()
-            .exchangeStrategies(IngestionWebClientSupport.exchangeStrategies())
+            .exchangeStrategies(WebClientSupport.exchangeStrategies())
             .defaultHeader("User-Agent", "VacancyScout/1.0")
             .build();
   }

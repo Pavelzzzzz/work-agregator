@@ -38,7 +38,9 @@
               <p class="font-medium text-gray-900">{{ c.name }}</p>
               <p class="text-xs text-gray-500">{{ c.description }}</p>
             </div>
-            <StatusBadge :variant="c.active ? 'green' : 'gray'">{{ c.scanStatus }}</StatusBadge>
+            <StatusBadge :variant="companyScanVariant(c.scanStatus)">{{
+              c.scanStatus
+            }}</StatusBadge>
           </router-link>
           <div v-if="!companyStore.companies.length" class="p-5 text-sm text-gray-400 text-center">
             No companies yet
@@ -73,6 +75,7 @@ import { useCompanyStore } from "@/stores/company";
 import { useVacancyStore } from "@/stores/vacancy";
 import Spinner from "@/components/common/Spinner.vue";
 import StatusBadge from "@/components/common/StatusBadge.vue";
+import { companyScanVariant } from "@/utils/company";
 
 const companyStore = useCompanyStore();
 const vacancyStore = useVacancyStore();

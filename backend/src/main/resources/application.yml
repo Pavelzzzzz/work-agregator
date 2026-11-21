@@ -22,6 +22,15 @@ spring:
   main:
     web-application-type: reactive
 
+company:
+  scan:
+    enabled: true
+    interval-ms: 300000
+    initial-delay-ms: 10000
+    batch-size: 20
+    concurrency: 4
+    timeout-ms: 5000
+
 rabota:
   rss:
     base-url: https://rabota.by

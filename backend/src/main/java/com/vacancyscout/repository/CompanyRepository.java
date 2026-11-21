@@ -12,4 +12,6 @@ public interface CompanyRepository extends R2dbcRepository<Company, UUID> {
   Flux<Company> findAllByIsActiveTrue();
 
   Mono<Company> findByName(String name);
+
+  Flux<Company> findByIsActiveTrueAndScanStatusOrderByCreatedAtAsc(String scanStatus);
 }

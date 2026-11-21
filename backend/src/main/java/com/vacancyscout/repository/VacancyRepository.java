@@ -16,4 +16,6 @@ public interface VacancyRepository extends R2dbcRepository<Vacancy, UUID>, Vacan
   Mono<Vacancy> findBySourceNameAndSourceId(String sourceName, String sourceId);
 
   Mono<Boolean> existsBySourceNameAndSourceId(String sourceName, String sourceId);
+
+  Mono<Vacancy> findFirstByCompanyNameAndIsActiveTrueOrderByPostedAtDesc(String companyName);
 }

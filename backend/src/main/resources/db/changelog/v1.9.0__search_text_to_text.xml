@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <!-- search_text concatenates title + company + description + requirements +
+         responsibilities. Real vacancy pages produce >2000 chars, so varchar(2000)
+         made ingestion fail with 22001. It is only ever used with LIKE, so TEXT
+         is the correct type. -->
+    <changeSet id="v1.9.0-search-text-to-text" author="vacancyscout">
+        <modifyDataType tableName="vacancies"
+                        columnName="search_text"
+                        newDataType="text"/>
+    </changeSet>
+</databaseChangeLog>
